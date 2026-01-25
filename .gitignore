@@ -1,0 +1,25 @@
+# Node.js
+node_modules/
+pnpm-lock.yaml
+package-lock.json
+.pnpm-store/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+
+# 输出文件
+output/
+*.pdf
+test.pdf
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# 临时文件
+*.tmp
+*.bak
+*.log

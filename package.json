@@ -1,0 +1,21 @@
+{
+  "name": "resume-html-to-pdf",
+  "version": "1.0.0",
+  "description": "简单的 HTML 转 PDF 工具",
+  "main": "html2pdf.js",
+  "scripts": {
+    "convert": "node html2pdf.js",
+    "convert:resume": "node html2pdf.js 简历/蔡忠岭2026-简约版.html",
+    "test": "node html2pdf.js 蔡忠岭2026.html test.pdf"
+  },
+  "keywords": [
+    "html",
+    "pdf",
+    "converter"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^22.0.0"
+  }
+}

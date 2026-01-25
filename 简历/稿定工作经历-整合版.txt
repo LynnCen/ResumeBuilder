@@ -1,0 +1,104 @@
+稿定科技 | AI前端开发工程师 | 2025/5 - 至今
+
+================================================================
+
+项目一：Insmind AI+（Agent）智能创作平台 ｜ 稿定科技 ｜ AI前端开发工程师
+
+项目描述：从0到1参与构建新一代AI驱动的智能设计编辑器，深度整合AI能力（AI对话、AI抠图、AI改图、AI扩图、AI视频生成），通过自然语言对话降低设计门槛，支持图片生成、视频生成、图像编辑等核心功能。项目服务InsMind全球化平台（MAU峰值1500万+、单月新增1200万+）和稿定设计（用户1亿+），采用革新性的人机交互模式，用户通过对话即可完成复杂的设计任务。
+
+技术栈：Vue 2.7 + TypeScript 5.0 + PixiJS 7.0 + Pinia + SSE + Dify + DeepSeek + WebGL + SAM + Redis
+
+AI Agent对话系统架构设计与实现
+设计并实现完整的AI对话系统，深度集成Dify Agent和DeepSeek大模型，实现意图识别和任务规划。通过SSE（Server-Sent Events）实现流式消息推送，秒级AI响应反馈，支持Text、Image、Video、Function Call、Status、Heartbeat等12种消息类型。创新的MessageHandler核心算法，设计消息缓冲队列机制保证高并发场景下消息的有序处理，维护messageQueue队列异步处理消息，根据message的type和mode路由到不同的handler，消息处理成功率>99%，支持千万级MAU的高并发场景。
+
+实现Agent三种工作模式：对话模式（自由交互支持多轮对话）、图片生成模式（ReAct架构，适合简单生成任务，单次工具调用）、视频生成模式（Plan-and-Execute + LangGraph状态图编排，适合复杂任务如IP设计、VI设计），设计工具调用与结果反馈的完整链路，支持工具级中断与恢复。
+
+设计工具级中断恢复机制（InterruptManager中断管理器），当用户稿豆不足、网络异常时保存checkpoint到Redis（TTL 15分钟），Checkpoint包含消息历史、失败工具ID、失败工具调用参数、剩余工具次数、会话状态等，用户充值后发送"继续"消息，系统检测到resumable状态消息，从checkpoint恢复状态并重新执行失败的工具。精准到工具级别的断点续传，无需从头开始，大大节省用户时间和成本，用户满意度提升30%，续费转化率提升25%。实现多会话管理，支持会话创建、切换、删除、重命名，设计会话状态持久化方案（Vuex + LocalStorage），支持跨设备同步。
+
+深度理解后端Agent七层架构（接入层-服务层-路由层-Agent层-执行层-工具层-基础设施层），理解GaodingRouter智能路由（基于LLM决策选择OrdinaryAgent或AdvancedDesignAgent），理解豆包大模型的五大作用（路由决策、需求理解、任务规划、工具编排、结果总结），理解动态工具加载机制（5秒缓存+Python type()动态创建工具类+MCP协议），理解工具并行执行机制（ThreadPoolExecutor最多2个，contextvars上下文隔离），理解Token优化策略（URL压缩节省93% Token、历史截断最近20条、工具描述优化），配合后端降低成本20-30%。
+
+无限画布渲染引擎开发
+基于PixiJS 7.0构建高性能WebGL渲染引擎，实现虚拟化渲染技术，支持10000+元素流畅渲染。设计视口裁剪算法（ViewportManager），只渲染可见区域元素，通过calculateVisibleElements()动态计算可见范围，进入视口时loadElement()，离开时unloadElement()卸载，内存占用降低70%，首屏渲染从2s优化至500ms。实现分层渲染策略（背景层、内容层、控制层），合并Draw Call优化性能，FPS从30提升至60。采用对象池技术（Object Pool）复用PixiJS对象，减少GC频率，避免卡顿。实现LOD（Level of Detail）根据缩放层级动态调整渲染精度，平衡性能与质量。开发拖拽、缩放、旋转等核心编辑交互，支持多选、框选、吸附对齐等高级功能，实现撤销/重做系统（基于Command模式）。
+
+AI工具链开发与集成
+集成Meta的Segment Anything Model（SAM），实现智能图像分割，开发一键抠图、智能选区、套索工具、画笔工具等核心功能。设计双Canvas架构（maskCanvas存储最终蒙版、selectionCanvas实时交互预览），实现坐标系统三层转换（屏幕坐标→Canvas坐标→图像坐标），考虑Canvas的DOM尺寸、实际尺寸、显示缩放、DPI等因素，pointFormEvent()函数实现精确的坐标转换。采用内阴影技术实现高亮边框效果：shadowBlur生成模糊光晕 + destination-in裁剪限制范围 + 50次叠加强化不透明度，设计自适应边框宽度算法Math.max(1, (2 * maskWidth) / displayWidth) * pixelRatio，适配不同缩放和DPI，保证视觉一致性。设计前后端协同方案，SAM模型推理优化到3000x3000尺寸，处理时间从5s降至2s。
+
+开发AI改图工具，实现AI Replace智能选区功能，支持局部编辑、风格迁移、智能填充，设计Base64图片压缩方案，传输效率提升60%，图像处理准确率95%+，平均处理时间<3s。实现AI扩图工具，开发裁剪框拖拽系统（支持8个方向拖拽：n/s/e/w/ne/nw/se/sw），设计图片与裁剪框的相对位置计算算法（containSize()函数计算图片在容器中的实际显示尺寸），实现边界检测与限制，支持比例预设（1:1、4:3、16:9、9:16等），新增高质量/标准质量双模式切换，为付费分级奠定基础。
+
+独立负责AI视频生成系统从0到1落地，支持文生视频、图生视频、视频特效三大功能。对接Dify工作流动态获取模型配置（模型列表、尺寸列表、时长列表、强度配置），实现模型、尺寸、时长联动配置，支持多图片上传（1-3张），集成Credits积分系统和计费逻辑。设计轻舟配置Schema协议，支持运营人员后台动态配置（默认值、可选项动态加载），实现视频生成进度展示与轮询机制，支持生成结果的预览与下载。AI视频功能上线后，使用量提升200%，生成成功率95%+。
+
+编辑器基座化架构设计
+设计并实现@design/design-foundation基座包，统一管理编辑器初始化流程。设计六阶段初始化流程：Phase 1-Pre-Vue基础环境（initEnv、initAPI、initPermission等）→ Phase 2-配置注入（extensionConfigService、editorConfigService）→ Phase 3-Vue应用创建（createApp、initEditorStore、initRouterGuards）→ Phase 4-业务启动与钩子（AppLinkService、beforeMountEditor回调）→ Phase 5-挂载DOM（app.mount）→ Phase 6-后置初始化（initTracker、initTrackerSubscription）。
+
+设计多租户配置系统（DesignConfig），支持皮肤、功能模块、权限点动态配置，满足稿定、InsMind、OEM客户等多租户需求，通过env、apis、permissions、extensionConfig等配置项实现灵活定制。实现插件生命周期管理（install → mounted → destroy），提供统一的API接口和事件总线。设计布局系统（Header/ResourceStation/Main/RightPanel），通过layoutSlots配置实现UI布局的灵活替换和扩展。支持3+租户配置，代码复用率85%，插件化架构功能模块按需加载，首屏加载时间优化40%，降低新功能开发成本，迭代效率提升50%。
+
+主导AI编辑器海外版适配，完成项目从editor-next到meta仓库的迁移，完成多语言接入、商业化弹窗替换、顶部栏/侧边栏/画布工具改造，打通editor-next与meta双仓库CI/CD发布流程，实现路由独立部署，输出完整改造排期与模块划分文档，协调前后端、Dify、轻舟多方对齐。
+
+项目成果与影响：AI对话消息处理成功率>99%，实现秒级响应，支持千万级MAU的高并发场景。无限画布支持10000+元素流畅渲染，FPS稳定60+，内存占用优化70%。AI工具图像处理准确率95%+，平均处理时间<3s，AI工具使用率提升300%，用户满意度90+%。工具级中断恢复机制使用户满意度提升30%，续费转化率提升25%。InsMind巅峰MAU超1500万，单月新增用户1200万+，成为全球化AI创作平台标杆。多租户架构代码复用率85%，插件化架构使首屏加载时间优化40%，新功能开发成本降低50%。
+
+================================================================
+
+项目二：稿定设计、花瓣、AI社区搜索推荐与全栈工程化 ｜ 稿定科技 ｜ AI前端开发工程师
+
+项目描述：负责稿定设计、花瓣网、AI社区全站搜索推荐系统，同时深度参与Insmind国际化产品体系（落地页系统、SEO优化、多支付方式接入）、稿定前端Monorepo超级仓库（15,000+文件、8+应用、100+共享包、500,000+行代码）的架构设计与实施，搭建完整的CI/CD自动化流水线。通过端一体化Design Token设计、CLI自动化国际化、CLI自动化Figma图标管理、GitLab MCP自动化工具、Import Map等工程化手段，全方位提升团队研发效率和产品质量。
+
+技术栈：Vue 3 + React 18 + @web-widget + TypeScript + SSR + Redis + OSS/CDN + Stripe + PayPal + pnpm Workspace + Turbo 2.5 + Changesets + GitLab CI/CD + Docker + Kubernetes + MCP协议
+
+搜索推荐系统
+负责稿定设计、花瓣网、AI社区全站搜索推荐业务，设计并实现发现页灵感词推荐功能，支持共现词算法、触发策略，提升用户探索效率，增加内容消费深度。实现搜索底纹词功能，优化搜索体验。参与花瓣网（日访问量千万级，月访问量数亿级）搜索推荐功能维护和优化，提升搜索准确率和推荐相关性。
+
+Insmind国际化产品体系
+负责Insmind国际化产品的落地页系统、SEO全链路优化、多支付方式接入等核心模块，支撑全球化战略和商业化闭环。InsMind作为全球化AI创作平台，巅峰MAU超1500万，单月新增用户1200万+，覆盖亚洲、欧美等多个核心市场。
+
+落地页系统（配置驱动架构）：采用"配置驱动+组件化+SSR"的架构模式，运营人员通过轻舟CMS配置页面内容，无需代码发布。使用兜底路由[[landing]]捕获所有未匹配的URL，设计URL到Content Code转换规则（将路径中的/替换为_作为CMS内容标识）。开发30+可复用组件库（home-banner、tool-banner、introduce、how-to、FAQ、recommend等），使用defineAsyncComponent实现组件级代码分割按需加载，根据CMS返回的material_type动态加载对应组件，实现完全配置驱动。实现getLandingResource()数据适配层，将CMS数据转换为前端组件所需的标准格式，处理历史组件类型兼容，统一按钮配置结构。设计智能文件上传功能，自动识别第一个支持上传的组件，鼠标悬停时切换上传目标。支持18种语言（id/es/pt-br/fr/ru/th/vi/ko/it/de/ja/zh-cn/zh-tw/tr/pl/nl/ar），一套配置支持所有语言，大幅降低维护成本。
+
+SEO全链路优化：实现getLandingLDData()函数自动生成7种Schema.org结构化数据（Organization组织信息关联社交账号、WebSite网站信息首页搜索框、BreadcrumbList面包屑导航搜索结果显示层级、FAQPage常见问题搜索结果显示FAQ折叠面板、HowTo操作指南搜索结果显示步骤化教程、Product + AggregateRating产品评分显示星级评分、Article文章元数据优化博客索引），提升搜索结果展示效果。设计智能评分算法，基于页面URL的确定性哈希算法生成产品评分（generateLandingData()函数：将URL转为哈希值→生成伪随机数→映射到4.6-4.9评分范围，评价数在3000-22000之间），相同页面始终生成相同评分避免爬虫检测到内容不一致，在搜索结果中显示星级评分，点击率提升30%+。
+
+基于@web-widget框架实现Vue 3+React混合SSR渲染，爬虫直接看到完整HTML内容无需等待JavaScript执行。实现await-all-ready中间件，等待异步内容加载完成后再返回HTML（超时控制生产环境3秒，避免慢速API拖累响应时间），确保爬虫看到完整内容。设计Hreflang多语言SEO架构，采用公共页面配置（base.json）+ 落地页白名单（hreflang.json）的双层机制，应用启动时从CDN加载配置支持热更新无需重新部署，Hreflang中间件自动注入多语言标签到HTML head，智能匹配西班牙用户自动看西班牙语版本。
+
+设计多层缓存架构（浏览器→CDN→Redis→OSS四层缓存策略）：Redis一级缓存TTL 60秒内存缓存极快速度，OSS二级缓存持久化存储Redis失效后的兜底方案。Cache-Control策略（max-age=600浏览器缓存10分钟、stale-while-revalidate=604800七天内后台更新、stale-if-error=604800服务故障时使用旧缓存），ETag缓存验证（304响应节省95%带宽，加快页面加载），缓存Key规则优化（search: false忽略utm参数，大幅提升缓存命中率）。缓存命中率99.97%（100万次访问仅300次执行SSR），TTFB < 500ms，首屏渲染 < 1.5s，服务器成本降低99%+。实现Sitemap动态代理，Sitemap托管在CDN应用层只做代理，通过Apollo配置中心实时更新sitemap地址无需重新部署，支持多语言sitemap（/sitemap.xml、/sitemap/es.xml等）。
+
+多支付方式接入与商业化：设计三层支付架构（前端收银台→支付核心层→支付网关），实现usePaymentMethod Hook统一管理支付方式。集成Stripe支付（全球信用卡/借记卡，支持订阅和单购）、PayPal支付（集成PayPal SDK，支持订阅和单购）、Payssion区域支付（集成13种区域化支付方式：俄罗斯YooMoney/T-Pay/SberPay/Credit Card、印尼ShopeePay/Dana、韩国KakaoPay、中国AliPay、菲律宾GCash/BPI、泰国Rabbit LINE Pay/TrueMoney、马来西亚Touch 'n Go）。实现支付状态检测（Check Paid）轮询机制每1秒检查订单状态最多5次，设计支付窗口管理处理跳转和回调，实现完整的埋点体系（曝光、点击、行为、成功、失败等），集成Google Analytics purchase事件和Yandex/Meta转化上报。独立设计并交付PDF账单系统，支持多币种（USD/EUR/GBP等）、多语言，打通商业化闭环，提升海外用户信任度与复购意愿。
+
+Monorepo工程化架构设计
+参与稿定前端Monorepo超级仓库的架构设计与实施，设计四层分层架构：应用层（apps/）路由配置组装部署（gaoding、insmind、open-platform等8+应用）、领域层（domains/）特定业务领域完整逻辑（editor、commerce等垂直切分）、共享层（packages/）跨领域通用代码（ui组件、utils工具、hooks等）、平台层（platform/）跨切面技术能力（config、monitoring、auth、storage）。实现单向依赖约束（上层可依赖下层，下层不能依赖上层），通过tags标签和boundaries规则强制架构边界防止架构腐化。
+
+实现Catalog依赖目录，统一管理45+核心依赖版本（Vue、React、TypeScript、Vite、PixiJS等），避免版本碎片化问题，支持多版本catalog（Vue2/Vue3技术栈共存）。开发自动化Catalog更新机器人，定时检测依赖更新（npm registry），自动创建MR（包含依赖收集、版本分发、格式化、MR创建全流程），减少人工维护成本90%。设计workspace协议管理内部依赖（workspace:*、workspace:^、workspace:~），支持本地链接（开发时）与发布时自动转换为语义化版本，配置Overrides强制版本覆盖解决第三方包安全漏洞问题。
+
+Turbo构建性能优化
+设计任务依赖图（build→test→deliverable→deploy→verify），配置dependsOn实现拓扑排序确保构建顺序（^build表示上游依赖的build任务），识别可并行的任务（无依赖关系）最大化CPU利用率。配置智能缓存策略：CacheKey计算公式Hash(任务配置 + inputs + env + upstreamOutputs)，精确定义inputs排除不影响构建的文件（!**/*.test.*、!**/*.md），避免README修改导致缓存失效，提升缓存命中率至85%+，接入Turbo远程缓存（TURBO_TOKEN）团队共享构建结果。设计环境变量策略（globalEnv影响缓存、globalPassThroughEnv不影响缓存），优化缓存命中率。
+
+CI/CD Pipeline耗时从30分钟优化至12分钟，增量场景优化至3-5分钟，缓存命中率85%+，开发反馈周期从30分钟缩短至5分钟。开发turbo-analyzer包装脚本，自动生成构建性能分析报告（.turbo/runs/），持续监控缓存命中率、任务执行时间等关键指标。
+
+CI/CD Pipeline架构设计
+设计7个Stage流程（bot→check→test→changeset→deliverable→deploy→verify）实现代码提交到生产部署的全流程自动化。Bot Stage自动化维护任务（Catalog更新、包索引生成、编辑器代码同步），Check Stage代码检查（ESLint、Prettier、TypeScript），Test Stage自动化测试（单元测试、集成测试），Changeset Stage版本管理（收集changesets、创建版本MR），Deliverable Stage制品生成（npm包、Docker镜像），Deploy Stage环境部署（Review/Staging/Production），Verify Stage部署验证（健康检查、烟雾测试）。
+
+开发GitLab MR Bot统一自动化MR工作流，实现syncAndCreateMR通用接口，支持Catalog更新（依赖版本统一管理）、包索引生成（自动维护包列表）、编辑器代码同步（跨仓库代码同步），所有维护任务自动化，减少人工干预90%。
+
+创新设计分支冻结机制解决版本MR无限循环问题：通过GitLab API动态修改分支保护规则，freezeBranch()设置access_level为0禁止所有人推送和合并，等待Pipeline成功后临时恢复权限自动合并，unfreezeBranch()完成后解冻恢复原始规则，使用resource_group机制确保全局同时只运行一个实例避免并发冲突。彻底解决版本MR无限循环问题，版本发布人工干预减少90%。
+
+实现多环境部署策略（Review、Staging、Production三种环境），Review环境基于MR号动态创建（review/mr123），MR关闭后自动销毁，环境隔离通过CI_ENVIRONMENT_TYPE + CI_ENVIRONMENT_INSTANCE动态计算。Docker容器化多阶段构建优化镜像体积，pnpm deploy生成.pruned精简依赖树，集成K8s容器编排支持灰度发布、蓝绿部署、金丝雀发布。深度集成Changesets实现版本管理自动化，开发自动版本合并Bot（merge-versions-mr.mjs），实现等待Pipeline成功→冻结分支→合并MR→发布到NPM→创建Git Tag→解冻分支全流程自动化，零人工干预。
+
+CLI自动化工具建设
+开发CLI自动化国际化工具（运行时国际化+自动化国际化），通过命令行工具自动扫描代码中的文本，提取需要翻译的内容，自动调用翻译API生成多语言文件，大幅减少手动翻译的工作量和出错率，支持18种语言的自动化翻译和维护。
+
+开发CLI自动化Figma图标管理工具，通过Figma API自动拉取设计师上传的图标，自动生成SVG文件和React/Vue组件，支持图标的自动化更新和版本管理。设计并实现了一套基于React/Vue的图标自动化生成器，通过Node.js脚本实现从API数据拉取到组件生成的端到端自动化，显著提升项目中图标资源的管理效率和工程化水平。图标更新从手动导出（30分钟）→自动化生成（2分钟），设计师上传新图标后自动同步到代码库，减少沟通成本，提升迭代效率。
+
+端一体化Design Token设计，建立设计系统的统一语言，通过Design Token将设计规范（颜色、字体、间距、圆角等）转换为可复用的变量，支持多端（Web、移动端、桌面端）的统一视觉体验，实现设计规范的代码化和自动化同步，设计师修改Design Token后自动同步到所有平台，确保视觉一致性。
+
+GitLab MCP自动化工具开发
+基于标准MCP协议开发GitLab自动化工具（TypeScript + @modelcontextprotocol/sdk + @gitbeaker），通过stdio传输方式在Cursor IDE中调用，实现工作流自动化。实现智能代码审查功能：analyze_mr_changes深度分析MR变更和diff数据，filter_reviewable_files根据配置规则过滤需要审查的文件，get_file_code_review_rules根据文件类型获取审查规则，push_code_review_comments推送行内评论到GitLab，支持critical/warning/suggestion三级分类，自动生成代码审查报告。
+
+实现MR自动化管理：get_merge_request获取MR详细信息，get_merge_request_changes获取文件变更和diff，update_merge_request_description更新MR描述，list_merge_requests列出项目的MR列表。实现辅助功能：get_file_content获取项目文件内容，debug_mr_sha_info调试MR版本信息。支持多GitLab实例，通过环境变量配置，完美兼容Cursor、Claude Desktop。
+
+MR描述生成从手动编写（20分钟）→ AI生成（2分钟），代码审查从人工审查（1小时）→ AI辅助（15分钟），技术方案生成从手动编写（2小时）→ AI生成（20分钟），个人及团队研发效率提升40%+。
+
+Import Map与模块联邦
+参与Import Map方案设计与实施，支持运行时动态加载外部模块，实现微前端架构下的模块共享和按需加载，减少打包体积，提升加载速度。通过Import Map实现多应用间的依赖共享（Vue、React、PixiJS等大型库），避免重复打包，减少用户下载的资源体积。设计模块联邦（Module Federation）架构，支持跨应用的组件共享和独立部署，提升团队协作效率和产品迭代速度。
+
+平台能力建设
+借调平台团队1个多月，负责DAM空间优化（优化宫格/列表视图、标题缩略图、类型展示），站内信系统升级（重构稿定+花瓣消息中心，实现官方/互动消息分类），CRC安全审核（接入内容安全审核系统，覆盖采集/画板/专辑/评论全场景）。
+
+项目成果与影响：自然流量占比从30%提升到60%+，长尾关键词覆盖10,000+，搜索结果点击率提升30%+。TTFB < 500ms，首屏渲染 < 1.5s，缓存命中率99.97%（100万次访问仅300次执行SSR），服务器成本降低99%+，FCP优化57%（3500ms→1500ms），Core Web Vitals全部达标（LCP/FID/CLS）。支持全球100+国家和地区的多种支付方式，支付成功率95%+，获客成本（CAC）降低40%。落地页系统使页面创建从数小时缩短至几分钟，运营效率大幅提升。
+
+Monorepo架构统一管理，代码复用率提升85%，跨项目开发效率提升50%。CI/CD Pipeline耗时从30分钟优化至12分钟（增量场景3-5分钟），Turbo缓存命中率85%+，构建性能提升70%。版本发布全自动化，人工干预减少90%，部署成功率99.5%，平均修复时间（MTTR）从60分钟缩短至25分钟。支持高频迭代，日均部署次数从5次提升至20次，开发反馈周期从30分钟缩短至5分钟。GitLab MCP工具使研发效率提升40%+，线上故障率<0.1%。CLI自动化工具使国际化翻译效率提升90%+，图标更新效率提升90%+，Design Token同步实现设计规范的代码化和自动化。
