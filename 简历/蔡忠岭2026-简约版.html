@@ -31,9 +31,7 @@
       display: flex;
       align-items: flex-start;
       gap: 30px;
-      padding-bottom: 20px;
       margin-bottom: 20px;
-      border-bottom: 2px solid #f0f0f0;
     }
     
     .photo-container {
@@ -45,7 +43,6 @@
       height: 160px;
       object-fit: cover;
       border-radius: 4px;
-      border: 1px solid #e0e0e0;
     }
     
     .info-container {
@@ -365,8 +362,8 @@
         </div>
         
         <div class="education">
-          <strong>复旦大学</strong> 电子信息/计算与智能创新学院（硕士研究生） | 
-          <strong>丽水学院</strong> 数字媒体技术/计算机学院（本科）
+          <div><strong>复旦大学</strong> 电子信息/计算与智能创新学院（硕士研究生）</div>
+          <div><strong>丽水学院</strong> 数字媒体技术/计算机学院（本科）</div>
         </div>
       </div>
       
@@ -380,10 +377,10 @@
       <span class="github-link">(<a href="https://github.com/LynnCen" target="_blank">@LynnCen</a>)</span>
     </h2>
     <ul>
-      <li><strong>GitLab MCP</strong> (<a href="https://github.com/LynnCen/gitlab-mcp" target="_blank">github.com/LynnCen/gitlab-mcp</a>, ⭐25) - 基于MCP协议的GitLab自动化工具，支持AI驱动的代码审查、MR自动化管理、行内评论等功能，提升团队研发效率40%+。</li>
-      <li><strong>LynKit</strong> (<a href="https://github.com/LynnCen/LynKit" target="_blank">github.com/LynnCen/LynKit</a>, ⭐6) - 现代化的React组件库，采用Monorepo架构，提供UI组件、Hooks、工具函数和图标系统，配备完整的Storybook文档。</li>
-      <li><strong>TransLink I18n</strong> (<a href="https://github.com/LynnCen/translink-i18n" target="_blank">github.com/LynnCen/translink-i18n</a>, ⭐4) - 前端国际化解决方案，提供CLI工具（AST智能提取、AI自动翻译）+ Runtime库 + Vite插件。</li>
-      <li><strong>Picto</strong> (<a href="https://github.com/LynnCen/picto" target="_blank">github.com/LynnCen/picto</a>, ⭐2) - 图标管理CLI工具，支持从Figma、Iconfont自动拉取图标并生成React/Vue/Svelte组件。</li>
+      <li><strong>GitLab MCP</strong> (<a href="https://github.com/LynnCen/gitlab-mcp" target="_blank">github.com/LynnCen/gitlab-mcp</a>) - 基于MCP协议的GitLab自动化工具，支持AI驱动的代码审查、MR自动化管理、行内评论等功能，提升团队研发效率40%+。</li>
+      <li><strong>LynKit</strong> (<a href="https://github.com/LynnCen/LynKit" target="_blank">github.com/LynnCen/LynKit</a>) - 现代化的React组件库，采用Monorepo架构，提供UI组件、Hooks、工具函数和图标系统，配备完整的Storybook文档。</li>
+      <li><strong>TransLink I18n</strong> (<a href="https://github.com/LynnCen/translink-i18n" target="_blank">github.com/LynnCen/translink-i18n</a>) - 前端国际化解决方案，提供CLI工具（AST智能提取、AI自动翻译）+ Runtime库 + Vite插件。</li>
+      <li><strong>Picto</strong> (<a href="https://github.com/LynnCen/picto" target="_blank">github.com/LynnCen/picto</a>) - 图标管理CLI工具，支持从Figma、Iconfont自动拉取图标并生成React/Vue/Svelte组件。</li>
       <li><strong>技术博客</strong> (<a href="https://lynncen.github.io/Lyc-notes/" target="_blank">lynncen.github.io/Lyc-notes</a>) - 基于VuePress搭建，累计输出50+篇技术文章，涵盖前端工程化、React/Vue、性能优化、AI应用等主题。</li>
     </ul>
 
@@ -476,45 +473,32 @@
     </div>
 
     <div class="project">
-      <div class="project-title">项目三：天猫淘海外逆向 | 阿里巴巴</div>
-      <div class="project-meta">技术栈：React + ICE + SSR + TypeScript + Vite + Scss + Unocss + Dumi + Fusion + Lerna + Node + 跨端H5</div>
+      <div class="project-title">项目三：跨境电商逆向物流系统（淘海外/淘日本） | 阿里巴巴</div>
+      <div class="project-meta">技术栈：React 18 + ICE + SSR/SSG + TypeScript + Vite + Scss + Unocss + Dumi + Fusion + Lerna + Node.js + Monorepo + 跨端H5</div>
       <div class="project-content">
-        <p><strong>项目描述：</strong>淘海外逆向物流系统优化项目旨在提升跨境电商的逆向物流效率，优化用户退货体验，降低退货成本，并提高退款成功率。项目涵盖跨境逆向履约能力建设、本地退流程线、仓库工作台及质检平台。</p>
+        <p><strong>项目描述：</strong>负责阿里巴巴跨境电商逆向物流系统（淘海外、淘日本）的前端架构设计与开发，覆盖海外退货、本地退流程、仓库工作台、质检平台等核心业务。项目旨在提升跨境电商的逆向物流效率，优化用户退货体验，降低退货成本，并提高退款成功率。参与从技术选型、性能优化到组件标准化的全流程开发，日均处理超万单逆向物流请求。</p>
         
-        <p><strong>跨境退逆向：</strong>开发跨境退预约页和详情页面，支持用户选择商品、填写商品、选择驿站、查看运费等功能。采用适配器模式封装业务组件，支持多场景适配。构建差异化支付，如0元支付、微信和国际支付等。进行低代码拓展，通过服务端配置生成指定页面，减少需求迭代周期和前后端人员差异。</p>
+        <h4>核心业务与架构设计</h4>
+        <p><strong>跨境退逆向系统：</strong>开发跨境退预约页和详情页面，支持商品选择、驿站配置、运费计算、差异化支付（0元支付、微信、国际支付）等核心功能。采用适配器模式封装业务组件，支持多场景适配（淘海外、淘日本、香港本地退）。设计低代码配置平台，通过服务端配置生成指定页面，减少需求迭代周期50%+。负责香港本地退重构，迁移Rax到ICE，设计组件化架构，开发预约管理、状态跟踪和支付等核心模块。</p>
         
-        <p><strong>香港本地退：</strong>负责重构本地退，迁移Rax到ICE，设计组件化架构，开发预约管理、状态跟踪和支付等核心模块。结合使用ZCache和Dataprefetch进行数据预加载，通过代码分割优化首屏加载时间，提高用户体验。</p>
+        <p><strong>仓库与质检工作台：</strong>开发仓库工作台核心功能，包括商品签收、状态查询、数据导出等模块，处理复杂的数据流转和状态管理。设计扫码枪与前端页面的集成方案，通过事件监听实现高效的核销码扫描，仓库操作效率提升40%。实现基于xlsx的大量数据导出方案，通过递归分页请求确保数据完整性，并优化内存占用。动态注入对接地址及脚本代码完成扫描数据回调处理，实现打印机、扫描仪和前端页面间的无缝通信。</p>
         
-        <p><strong>仓库和质检工作台：</strong>开发仓库工作台核心功能，如商品签收、状态查询和数据导出等模块，处理复杂的数据流转和状态管理。设计扫码枪与前端页面的集成方案，通过事件监听实现高效的核销码扫描，大幅提高人工操作效率。实现基于xlsx的大量数据导出方案，通过递归分页请求确保数据完整性，并优化内存占用。动态注入对接地址及脚本代码完成扫描数据回调处理，实现打印机、扫描仪和前端页面间的无缝通信。</p>
+        <h4>前端架构与工程化建设</h4>
+        <p><strong>Monorepo组件库建设：</strong>参与Odin-JP系列基础物料库建设，收敛原分散组件，统一封装为轻量化、高内聚的Monorepo组件库（API、Hooks、Utils等），降低维护成本70%，复用率提升60%+。实现UI组件库主题色动态配置，集成UnoCss主题色插件配置。设计并实现基于React的图标自动化生成器，通过Node.js脚本实现从API数据拉取到React组件生成的端到端自动化，图标更新效率提升90%。</p>
         
-        <p><strong>其他：</strong>基于Wormhole对逆向业务和组件库进行全链路SSR改造，结合Suspense实现流式数据加载与组件渲染，突破传统阻塞型数据加载限制，大幅提高首屏渲染效率，FCP从1500ms提升至620ms左右。接入CLI工具实现全链路自动化的多语言国际化适配，大幅减少手动出错率，提升稳定性和开发效率。采用AEM埋点系统，涵盖了点击、曝光、页面SPM等场景，实现了对业务全链路的监控。</p>
+        <p><strong>SSR/SSG性能优化：</strong>基于Wormhole对逆向业务和组件库进行全链路SSR改造，结合Suspense实现流式数据加载与组件渲染，突破传统阻塞型数据加载限制，FCP从1500ms提升至620ms（优化57%）。结合ZCache和DataPrefetch数据预取策略，优化白屏加载体验。设计基于SSG的骨架屏方案，通过构建时预渲染生成骨架屏HTML，有效解决首屏白屏问题。开发SsgShimPlugin插件在Node环境中模拟客户端环境变量，确保SSG模式下代码的兼容性与稳定性。</p>
         
-        <p><strong>项目成果与影响：</strong>实现退货流程线上化率提升60%，退款成功率提高至80%，仓库操作效率提升40%，有效解决跨境退货成本高、流程复杂等痛点，日均处理超万单逆向物流请求，大幅提升用户体验。</p>
+        <h4>全链路监控与跨端优化</h4>
+        <p><strong>监控与埋点：</strong>采用AEM埋点系统，涵盖点击、曝光、页面SPM等场景，实现业务全链路监控。接入自动化异常采集JSTracker，结合initMtop接口拦截，保障问题追溯效率，线上问题定位效率提升60%。接入CLI工具实现全链路自动化的多语言国际化适配，减少手动出错率90%+。</p>
+        
+        <p><strong>跨端H5优化：</strong>通过Windvane桥接Native模块和PHA容器能力，实现半浮层、头部隐藏、下拉刷新等原生交互，提升端内H5体验。通过代码分割、懒加载优化首屏加载时间，确保不同平台上的运行流畅性和一致性。</p>
+        
+        <p><strong>项目成果与影响：</strong>退货流程线上化率提升60%，退款成功率提高至80%，仓库操作效率提升40%。FCP从1500ms优化至620ms（优化57%），组件复用率提升60%，维护成本降低70%。日均处理超万单逆向物流请求，有效解决跨境退货成本高、流程复杂等痛点，大幅提升用户体验和运营效率。</p>
       </div>
     </div>
 
     <div class="project">
-      <div class="project-title">项目四：淘日本逆向 | 阿里巴巴</div>
-      <div class="project-meta">技术栈：React + ICE + TypeScript + Vite + Lerna + Scss + Node + 跨端H5</div>
-      <div class="project-content">
-        <p><strong>项目描述：</strong>在Tao日本APP电商平台的逆向物流流程中，用户申请退款和退货的场景复杂多样。为了提高用户体验和运营效率，对全流程包裹维度的逆向入口进行了优化，确保在特定情况下能够快速、准确地处理用户的退款请求。参与Tao日本站逆向前端基础架构的设计与实施，参加从技术选型、性能优化到组件标准化的全流程开发。</p>
-        
-        <p><strong>基础业务：</strong>基于原AE逆向业务迁移重构至JP业务，特殊样式适配，逻辑和复杂流程梳理。</p>
-        
-        <p><strong>组件库建设：</strong>参与Odin-JP系列基础物料库建设，收敛原分散组件，统一封装为轻量化、高内聚的Monorepo组件库（API、Hooks、API等），大大降低维护成本并提升复用率。实现对UI组件库主题色动态配置和集成UnoCss主题色插件配置。</p>
-        
-        <p><strong>图标管理：</strong>设计并实现了一套基于React的图标自动化生成器，通过Node.js脚本实现从API数据拉取到React组件生成的端到端自动化，显著提升项目中图标资源的管理效率和工程化水平。</p>
-        
-        <p><strong>性能优化：</strong>设计CSR架构性能优化方案，结合ZCache和DataPrefetch数据预取，优化白屏加载。设计基于SSG的骨架屏方案，通过构建时预渲染生成的骨架屏HTML，有效解决首屏白屏问题。通过SsgShimPlugin插件在Node环境中模拟客户端环境变量，确保SSG模式下代码的兼容性与稳定性。</p>
-        
-        <p><strong>监控与优化：</strong>通过AEM埋点系统实现业务全链路监控，埋点规范覆盖点击、曝光页面SPM等场景。接入自动化异常采集JSTracker，结合initMtop接口拦截，保障问题追溯效率。通过Windvane桥接Native模块和PHA容器能力，实现半浮层、头部隐藏、下拉刷新等原生交互，提升端内H5体验。</p>
-        
-        <p><strong>项目成果与影响：</strong>通过构建高效研发工作流、自动化图标管理系统和优化的CSR、SSG性能，显著提升了用户体验和开发效率。同时，整合的基础物料库和增强的原生交互能力，使应用在不同平台上的运行更加流畅和一致，并通过全链路监控和数据加密，确保了数据的安全性和系统的稳定性。</p>
-      </div>
-    </div>
-
-    <div class="project">
-      <div class="project-title">项目五：羚羊智能客服工作台 | 阿里巴巴</div>
+      <div class="project-title">项目四：羚羊智能客服工作台 | 阿里巴巴</div>
       <div class="project-meta">技术栈：React + TypeScript + Agora RTC + WebSocket + Mobx + Ant Design + Severos</div>
       <div class="project-content">
         <p><strong>项目描述：</strong>客服工作台是阿里巴巴旗下的一款智能客服产品，是阿里在电商和新零售等领域多年沉淀的一套全渠道智能客服解决方案。提供服务前关键信息识别、智能调度，服务中快速回复、客服辅助、快速标记，服务后数据分析、智能质检的功能。</p>
@@ -526,7 +510,7 @@
     </div>
 
     <div class="project">
-      <div class="project-title">项目六：TMM实时聊天软件（土耳其版微信）| 四川盛通智联网络科技有限公司</div>
+      <div class="project-title">项目五：TMM实时聊天软件（土耳其版微信）| 四川盛通智联网络科技有限公司</div>
       <div class="project-meta">技术栈：React + TypeScript + Electron + Mobx + WebSocket + IndexDB/Dexie + AWS + Antd</div>
       <div class="project-content">
         <p><strong>项目描述：</strong>独立负责PC端全链路开发，搭建对标土耳其版微信的跨平台实时聊天应用（支持Win/Mac），DAU超10万，上线后土耳其用户覆盖率提升20%。负责TMM后台管理系统、移动端页面及官网的开发和维护，涵盖广告管理、流量监控、每日上线人数统计、包管理、版本管理等功能模块。</p>
@@ -546,7 +530,7 @@
     </div>
 
     <div class="project">
-      <div class="project-title">项目七：云森防精密智控综合管理平台（地图&后台系统）| 浙江点创科技有限公司</div>
+      <div class="project-title">项目六：云森防精密智控综合管理平台（地图&后台系统）| 浙江点创科技有限公司</div>
       <div class="project-meta">技术栈：React + TypeScript + Ant Design + BizCharts + WMS + 天地图 + 第三方插件</div>
       <div class="project-content">
         <p><strong>项目描述：</strong>与莲都区林业局合作开发，打造集地图展示与后台管理于一体的综合管理平台，涵盖首页、分析决策、任务派发、进度跟踪、打孔注药等功能模块，助力林业管理的数字化与智能化。</p>
