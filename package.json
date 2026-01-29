@@ -5,7 +5,7 @@
   "main": "html2pdf.js",
   "scripts": {
     "convert": "node html2pdf.js",
-    "convert:resume": "node html2pdf.js 简历/蔡忠岭2026-简约版.html",
+    "convert:resume": "node html2pdf.js 简历/蔡忠岭2026-优化保守版.html",
     "test": "node html2pdf.js 蔡忠岭2026.html test.pdf"
   },
   "keywords": [
