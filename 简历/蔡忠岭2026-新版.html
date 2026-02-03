@@ -504,53 +504,62 @@
 
     <div class="project">
       <div class="project-title">项目三：跨境电商逆向物流系统（淘海外/淘日本） | 阿里巴巴</div>
-      <div class="project-meta">技术栈：React 18 + ICE + SSR/SSG + TypeScript + Vite + Scss + Unocss + Dumi + Fusion + Lerna + Node.js + Monorepo + 跨端H5</div>
+      <div class="project-meta">技术栈：React 18 + ICE + SSR/SSG + TypeScript + Vite + Scss + Fusion + Lerna + Node.js + Monorepo + 跨端H5</div>
       <div class="project-content">
-        <p><strong>业务背景：</strong>负责阿里巴巴跨境电商逆向物流系统（淘海外、淘日本）的前端架构设计与开发，覆盖海外退货、本地退流程、仓库工作台、质检平台等核心业务。项目旨在提升跨境电商的逆向物流效率，优化用户退货体验，降低退货成本，并提高退款成功率。日均处理超万单逆向物流请求。</p>
+        <p><strong>业务背景：</strong>阿里巴巴跨境电商逆向物流核心系统，服务淘海外、淘日本、香港本地退等多站点业务，<span class="highlight">日均处理1万+逆向物流订单，覆盖全球20+国家/地区</span>。覆盖退货全链路：用户退货预约、跨境物流追踪、仓库签收质检、退款结算。负责前端架构设计与核心功能开发，从Rax迁移至ICE框架重构，主导组件库建设与SSR性能优化。</p>
         
-        <p><strong>核心业务与架构设计：</strong>开发跨境退预约页和详情页面，支持商品选择、驿站配置、运费计算、差异化支付（0元支付、微信、国际支付）等核心功能。采用适配器模式封装业务组件，支持多场景适配（淘海外、淘日本、香港本地退）。设计低代码配置平台，通过服务端配置生成指定页面，减少需求迭代周期50%+。开发仓库工作台核心功能（商品签收、状态查询、数据导出），设计扫码枪与前端页面的集成方案，通过事件监听实现高效的核销码扫描，仓库操作效率提升40%。</p>
+        <p><strong>跨境退货业务系统：</strong>开发退货预约核心流程（商品选择→驿站配置→运费计算→支付确认），采用适配器模式设计业务组件，一套代码适配淘海外/淘日本/香港本地退三种场景。实现差异化支付架构（0元支付/微信/国际支付），通过策略模式动态切换支付渠道。设计低代码配置平台，服务端JSON Schema驱动页面生成，运营人员零代码配置新页面，需求迭代周期缩短50%+。</p>
         
-        <p><strong>前端架构与工程化建设：</strong>参与Odin-JP系列基础物料库建设，收敛原分散组件，统一封装为轻量化、高内聚的Monorepo组件库（API、Hooks、Utils等），降低维护成本70%，复用率提升60%+。基于Wormhole对逆向业务和组件库进行全链路SSR改造，结合Suspense实现流式数据加载与组件渲染，FCP从1500ms提升至620ms（优化57%）。设计基于SSG的骨架屏方案，通过构建时预渲染生成骨架屏HTML，有效解决首屏白屏问题。</p>
+        <p><strong>仓库工作台系统：</strong>开发仓库核心功能模块（商品签收/状态查询/数据导出/质检验收），处理复杂的状态机流转（待签收→质检中→已入库→已退款）。设计扫码枪硬件集成方案，通过事件监听+全局回调实现扫描数据实时处理，动态注入脚本完成打印机、扫描仪与前端页面的无缝通信。实现基于xlsx的大数据量导出，递归分页请求保障数据完整性，内存优化防止浏览器崩溃。设计Base64图片压缩管道，质检图片传输效率提升70%。</p>
         
-        <p><strong>全链路监控与跨端优化：</strong>采用AEM埋点系统（点击、曝光、页面SPM等场景），接入自动化异常采集JSTracker，线上问题定位效率提升60%。通过Windvane桥接Native模块和PHA容器能力（半浮层、头部隐藏、下拉刷新等原生交互），提升端内H5体验。通过代码分割、懒加载优化首屏加载时间，确保不同平台上的运行流畅性和一致性。</p>
+        <p><strong>组件库与SSR架构：</strong>主导Odin-JP基础物料库建设，收敛分散组件为Monorepo架构（API/Hooks/Utils/UI），实现UI组件主题色动态配置，集成UnoCSS主题插件。基于Wormhole框架实施全链路SSR改造，结合React Suspense实现流式渲染与数据加载并行，<span class="highlight">FCP从1500ms优化至620ms（提升57%）</span>。设计SSG骨架屏方案，通过SsgShimPlugin在Node环境模拟客户端变量，构建时预渲染骨架屏HTML解决白屏问题。</p>
         
-        <div class="result-line"><strong>项目成果：</strong>退货流程线上化率提升60%，退款成功率提高至80%，仓库操作效率提升40%。FCP从1500ms优化至620ms（优化57%），组件复用率提升60%，维护成本降低70%。</div>
+        <p><strong>全链路监控与跨端优化：</strong>接入AEM埋点系统（点击/曝光/页面SPM）+ JSTracker异常采集，结合initMtop接口拦截实现问题快速追溯。通过Windvane桥接Native模块（半浮层/头部隐藏/下拉刷新）+ PHA容器能力，提升端内H5原生体验。结合ZCache + DataPrefetch数据预取，配合代码分割与路由级懒加载，优化首屏加载性能。</p>
+        
+        <div class="result-line"><strong>项目成果：</strong><span class="highlight">退货流程线上化率提升60%，退款成功率提高至80%</span>，仓库操作效率提升40%；FCP从1500ms优化至620ms（提升57%），组件复用率提升60%，维护成本降低70%；线上问题定位效率提升60%，系统稳定性99.9%。</div>
       </div>
     </div>
 
     <div class="project">
-      <div class="project-title">项目四：羚羊智能客服工作台 | 阿里巴巴</div>
-      <div class="project-meta">技术栈：React + TypeScript + Agora RTC + WebSocket + Mobx + Ant Design + Severos</div>
+      <div class="project-title">项目四：羚羊AI智能客服工作台 | 阿里巴巴</div>
+      <div class="project-meta">技术栈：React 18 + TypeScript + Agora RTC + WebSocket + SSE + Mobx + Ant Design</div>
       <div class="project-content">
-        <p><strong>业务背景：</strong>客服工作台是阿里巴巴旗下的一款智能客服产品，是阿里在电商和新零售等领域多年沉淀的一套全渠道智能客服解决方案。提供服务前关键信息识别、智能调度，服务中快速回复、客服辅助、快速标记，服务后数据分析、智能质检的功能。</p>
+        <p><strong>业务背景：</strong>阿里巴巴全渠道智能客服解决方案，服务电商与新零售业务，<span class="highlight">日均处理咨询量100万+，峰值并发1万+客服在线</span>。覆盖服务全链路：服务前（智能路由/用户画像识别）、服务中（AI辅助回复/实时视频通话/工单处理）、服务后（会话质检/数据分析）。负责视频客服系统与AI智能助手的前端架构设计与核心功能开发。</p>
         
-        <p><strong>视频客服系统：</strong>基于Agora RTC SDK搭建高并发视频通信系统，结合WebSocket实现信令同步，设计多窗口渲染架构，支持主屏、侧边视频列表、最小化悬浮窗等多形态交互。客户端采用分层状态机设计（Context+useReducer），封装useCallControl Hook管理通话操作，用户端通过Mobx响应式状态流实现双端实时状态管理。实现WebRTC级联重连策略（断网5秒内自动重连）、通话超时熔断（30秒无响应自动挂断），系统异常率下降15%。开发设备健康度检测模块，预检摄像头/麦克风权限、网络质量评分，增强异常拦截准确率。</p>
+        <p><strong>实时视频通信系统：</strong>基于Agora RTC SDK构建WebRTC视频通信能力，设计客户端双端状态机架构（客服端Context+useReducer / 用户端Mobx响应式流），通过WebSocket实现信令同步与会话状态管理。实现多窗口渲染架构（主屏通话/侧边列表/悬浮小窗/画中画），支持窗口拖拽、最小化、多会话切换等交互。核心优化：（1）设备健康度预检（摄像头/麦克风权限+网络质量评分），前置拦截异常场景；（2）级联重连策略（网络抖动5秒内自动恢复+断线重连超时保护），通话异常率下降15%；（3）通话超时熔断（30秒无响应自动挂断+服务降级），保障系统稳定性。</p>
         
-        <p><strong>AI智能客服：</strong>设计多模态消息协议，新增chaAIMessage（闲聊）、docAiMessage（文档解析）、summaryAiMessage（会话总结）三类消息，通过SSE流式渲染引擎实现实时内容逐字输出。开发轮询调度器（usePolling），结合指数退避算法动态调整请求间隔，减少大模型服务器压力。搭建Agent-lab可视化配置系统，支持拖拽式AI技能编排、话术模版动态绑定等。</p>
+        <p><strong>AI智能助手系统：</strong>设计IM消息协议扩展，新增AI专属消息类型（chatAI闲聊/docAI文档解析/summaryAI会话总结/suggestAI回复建议），集成SSE流式渲染引擎实现AI回复逐字输出。开发智能轮询调度器，结合指数退避算法动态调整AI服务请求频率，降低大模型服务压力。搭建Agent-lab可视化配置平台，支持客服技能编排（拖拽式工作流）、话术模板动态绑定、知识库检索配置，实现"配置即上线"零代码部署。</p>
+        
+        <p><strong>客服效能优化：</strong>实现快捷回复系统（常用话术/商品卡片/订单查询一键发送），开发智能标签系统（用户意图识别+自动打标），集成会话摘要自动生成（AI总结+关键信息提取），客服平均响应时间缩短40%。</p>
+        
+        <div class="result-line"><strong>项目成果：</strong>视频通话连接成功率98%+，音视频质量评分4.8/5.0；AI辅助回复采纳率65%，<span class="highlight">客服人效提升50%</span>，用户满意度提升至92%；系统稳定性99.9%，峰值并发支持1万+在线客服。</div>
       </div>
     </div>
 
     <div class="project">
       <div class="project-title">项目五：TMM实时聊天软件（土耳其版微信）| 四川盛通智联网络科技有限公司</div>
-      <div class="project-meta">技术栈：React + TypeScript + Electron + Mobx + WebSocket + IndexDB/Dexie + AWS + Antd</div>
+      <div class="project-meta">技术栈：React + TypeScript + Electron + Mobx + WebSocket + IndexDB/Dexie + AWS S3 + Quill</div>
       <div class="project-content">
-        <p><strong>业务背景：</strong>独立负责PC端全链路开发，搭建对标土耳其版微信的跨平台实时聊天应用（支持Win/Mac），DAU超10万，上线后土耳其用户覆盖率提升20%。负责TMM后台管理系统、移动端页面及官网的开发和维护，涵盖广告管理、流量监控、每日上线人数统计、包管理、版本管理等功能模块。</p>
+        <p><strong>业务背景：</strong>对标土耳其版微信的跨平台实时聊天应用（Win/Mac），<span class="highlight">DAU超10万，土耳其用户覆盖率提升20%</span>。独立负责PC端全链路开发，涵盖即时通讯、群聊管理、文件传输和搜索等核心功能，以及后台管理系统、H5及官网开发维护。</p>
         
-        <p><strong>模块重构与架构设计：</strong>基于关注点分离原则，将聊天模块重构为API（接口聚合）、DB（数据持久化）、Event（跨模块通信）、State（状态管理）、UI（视图渲染）五层架构，通过依赖注入解耦逻辑。结合React的memo与虚拟列表实现消息动态渲染，减少不必要的DOM操作，利用Mobx的细粒度响应式更新，优化复杂状态同步场景。</p>
+        <p><strong>IM架构与消息系统：</strong>基于关注点分离原则，将聊天模块重构为五层架构（API→DB→Event→State→UI），通过依赖注入实现模块解耦。消息系统设计：（1）消息ID去重 + 服务端序列号排序，保障消息顺序一致性；（2）消息状态机流转（发送中→已发送→已送达→已读），实现已读回执与消息撤回；（3）虚拟滚动 + 分页加载历史消息，支持万级消息列表流畅渲染；（4）Mobx细粒度响应式更新，优化未读数/在线状态/会话列表等复杂状态同步，列表滚动流畅度提升60%。</p>
         
-        <p><strong>云端资源管理：</strong>采用流式读写策略，基于Node的FS模块与AWS SDK分片上传接口，实现大文件下载、分片上传、断点续传和并行上传。通过背压控制平衡内存与I/O吞吐量，有效解决文件下载卡顿问题。采用LRU算法管理本地资源缓存。</p>
+        <p><strong>实时通信与消息可靠性：</strong>基于WebSocket设计双向通信协议，心跳保活 + ACK确认机制保障消息必达。核心能力：（1）级联重连策略（网络抖动自动恢复+指数退避重试）；（2）离线消息队列补偿，断网期间本地缓存，恢复后增量同步；（3）基于CAP定理设计多端状态同步，解决会话状态（置顶/静音/已读）的多端冲突。消息到达率99.9%，延迟<100ms。</p>
         
-        <p><strong>实时通信系统：</strong>基于WebSocket的心跳包与ACK确认机制保证消息可靠性，集成自动重连与离线队列补偿。应用CAP定理权衡一致性，有效解决多端操作冲突，确保会话状态（置顶/静音）一致性。</p>
+        <p><strong>Electron桌面端能力：</strong>基于Electron主进程/渲染进程IPC通信架构，实现系统托盘常驻 + 消息通知推送 + 全局快捷键唤起。设计多窗口管理机制（主窗口/聊天窗口/设置窗口），通过electron-updater实现应用自动更新，支持Win/Mac双平台打包发布。</p>
         
-        <p><strong>本地化搜索引擎：</strong>基于IndexDB的多对象存储特性，设计联合索引实现跨表查询优化。通过位运算快速过滤优先级会话，减少全表扫描开销，使用Web Worker分离计算搜索与主线程渲染，避免卡顿。</p>
+        <p><strong>大文件传输与本地存储：</strong>基于AWS S3设计分片上传（5MB分片+并行+断点续传），支持GB级文件传输；流式下载+背压控制平衡内存与I/O吞吐量；LRU算法管理本地资源缓存。基于IndexDB设计本地搜索引擎，联合索引优化跨表查询，Web Worker分离搜索计算避免UI卡顿，万级数据检索<50ms。</p>
         
-        <p><strong>编辑器拓展：</strong>基于Quill的Delta模型开发插件，通过MutationObserver监听光标事件，实现@消息上下文感知，支持O(n)时间复杂度匹配成员，利用异或运算动态标记关联消息，支持@消息跳转。</p>
+        <p><strong>富文本编辑器扩展：</strong>基于Quill Delta模型开发@提及插件，MutationObserver监听光标事件实现上下文感知，O(n)时间复杂度成员匹配，异或运算动态标记关联消息，支持@消息高亮与一键跳转。</p>
+        
+        <div class="result-line"><strong>项目成果：</strong><span class="highlight">DAU超10万，土耳其用户覆盖率提升20%</span>；消息到达率99.9%，延迟<100ms；文件传输成功率99%+，上传速度提升3倍；列表滚动流畅度提升60%，搜索响应<50ms。</div>
       </div>
     </div>
 
     <h2>自我评价</h2>
     <ul>
       <li>性格开朗，擅长跨部门沟通协调，能快速推动项目落地。学习能力强，常关注技术社区，对新技术有强烈好奇心，喜欢深挖底层原理和追根溯源解决问题。</li>
+      <li>热衷开源贡献与技术分享，维护多个开源项目并持续输出技术博客。对AI赋能研发效率有深度实践，善于将新技术落地到实际业务场景，追求工程化与自动化的极致体验。</li>
     </ul>
 
   </div>
