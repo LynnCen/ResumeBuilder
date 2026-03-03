@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>蔡忠岭 - 个人简历</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      line-height: 1.7;
+      color: #333;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 35px 45px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .header {
+      display: flex;
+      align-items: flex-start;
+      gap: 28px;
+      /* margin-bottom: 18px; */
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-shrink: 0;
+    }
+    
+    .photo-container {
+      flex-shrink: 0;
+    }
+    
+    .photo {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+      object-position: center top;
+      border-radius: 4px;
+      display: block;
+    }
+    
+    .name-title {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .header h1 {
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: #333;
+      margin: 0;
+      line-height: 1.2;
+    }
+    
+    .job-title {
+      font-size: 14px;
+      color: #555;
+      font-weight: normal;
+    }
+    
+    .header-right {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 32px;
+      padding-top: 4px;
+      padding-right: 20px;
+    }
+    
+    .contact-column {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #333;
+      line-height: 1.4;
+    }
+    
+    .contact-item .icon {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+    }
+    
+    .contact-item .icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    
+    .contact-item .text {
+      color: #333;
+      min-width: 0;
+    }
+    
+    .contact-item .text a {
+      color: #0066cc;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    
+    .contact-item .text a:hover {
+      text-decoration: none;
+    }
+    
+    h2 {
+      font-size: 17px;
+      color: #0066cc;
+      margin-top: 18px;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid #0066cc;
+      font-weight: 600;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    
+    h2:first-of-type {
+      margin-top: 12px;
+    }
+    
+    h2 .github-link {
+      font-size: 14px;
+      font-weight: normal;
+      color: #666;
+    }
+    
+    h2 .github-link a {
+      color: #0066cc;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    h2 .github-link a:hover {
+      text-decoration: underline;
+    }
+    
+    h3 {
+      font-size: 16px;
+      color: #333;
+      margin-top: 15px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    
+    h4 {
+      font-size: 14px;
+      color: #444;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    
+    p {
+      font-size: 13px;
+      margin-bottom: 6px;
+      text-align: justify;
+      line-height: 1.7;
+    }
+    
+    ul {
+      list-style: none;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    
+    ul li {
+      margin-bottom: 5px;
+      padding-left: 18px;
+      position: relative;
+      text-align: justify;
+      line-height: 1.7;
+    }
+    
+    ul li:before {
+      content: "◆";
+      position: absolute;
+      left: 0;
+      color: #0066cc;
+      font-size: 10px;
+      top: 2px;
+    }
+    
+    ul li strong {
+      font-weight: 600;
+      color: #333;
+    }
+    
+    ul li a {
+      color: #0066cc;
+      text-decoration: none;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+    
+    ul li a:hover {
+      text-decoration: underline;
+    }
+    
+    .work-item {
+      margin-bottom: 5px;
+    }
+    
+    .work-header {
+      font-size: 13px;
+      color: #333;
+      margin-bottom: 3px;
+    }
+    
+    .work-header strong {
+      font-weight: 600;
+    }
+    
+    .work-desc {
+      font-size: 13px;
+      color: #555;
+      margin-top: 4px;
+      margin-bottom: 0;
+      padding-left: 0;
+      line-height: 1.65;
+    }
+    
+    .project {
+      margin-bottom: 16px;
+    }
+    
+    .project-title {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #0066cc;
+      margin-bottom: 5px;
+    }
+    
+    .project-title a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    
+    .project-title a:hover {
+      text-decoration: underline;
+    }
+    
+    .project-content a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    
+    .project-content a:hover {
+      text-decoration: underline;
+    }
+    
+    .project-meta {
+      font-size: 12.5px;
+      color: #666;
+      margin-bottom: 6px;
+    }
+    
+    .project-content {
+      font-size: 13px;
+      line-height: 1.7;
+      text-align: justify;
+    }
+    
+    .project-content p {
+      margin-bottom: 5px;
+    }
+    
+    .highlight {
+      color: #d35400;
+      font-weight: 600;
+    }
+    
+    .result-line {
+      background: #f8f9fa;
+      padding: 6px 10px;
+      margin-top: 8px;
+      border-left: 3px solid #0066cc;
+      font-size: 13px;
+    }
+    
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      
+      .container {
+        box-shadow: none;
+        padding: 10px 12px;
+        max-width: 100%;
+      }
+      
+      .header {
+        page-break-inside: avoid;
+        /* margin-bottom: 12px;
+        padding-bottom: 12px; */
+      }
+      
+      .photo {
+        width: 80px;
+        height: 80px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      .contact-item {
+        font-size: 12px;
+      }
+      
+      .contact-item .icon {
+        width: 16px;
+        height: 16px;
+      }
+      
+      .contact-item .icon svg {
+        width: 14px;
+        height: 14px;
+      }
+      
+      
+      h2 {
+        flex-wrap: wrap;
+        margin-top: 14px;
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+        font-size: 16px;
+      }
+      
+      h2:first-of-type {
+        margin-top: 6px;
+      }
+      
+      .project {
+        margin-bottom: 12px;
+      }
+      
+      ul li {
+        margin-bottom: 4px;
+      }
+      
+      p {
+        margin-bottom: 5px;
+      }
+      
+      .result-line {
+        padding: 5px 8px;
+        margin-top: 6px;
+      }
+    }
+    
+    @media screen and (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+      
+      .header-left {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .header-right {
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+      
+      .photo {
+        width: 80px;
+        height: 80px;
+      }
+      
+      h2 {
+        flex-wrap: wrap;
+      }
+      
+      h2 .github-link {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <div class="photo-container">
+          <img src="img/1adf7d1649e96ac34f405bb08111680c.JPG" alt="蔡忠岭" class="photo">
+        </div>
+        <div class="name-title">
+          <h1>蔡忠岭</h1>
+          <div class="job-title">AI前端开发工程师</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="contact-column">
+          <div class="contact-item">
+            <span class="icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+            <span class="text">杭州</span>
+          </div>
+          <div class="contact-item">
+            <span class="icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+            <span class="text"><a href="mailto:zhonglingcai466@gmail.com">zhonglingcai466@gmail.com</a></span>
+          </div>
+          <div class="contact-item">
+            <span class="icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+            <span class="text">17369797751</span>
+          </div>
+         
+        </div>
+        <div class="contact-column">
+          <div class="contact-item">
+            <span class="icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
+            <span class="text"><a href="https://lynncen.github.io/Lyc-notes/" target="_blank">个人网站</a></span>
+          </div>
+          <div class="contact-item">
+            <span class="icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></span>
+            <span class="text"><a href="https://github.com/LynnCen" target="_blank">GitHub</a></span>
+          </div>
+          <div class="contact-item">
+            <span class="icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+            <span class="text">27岁 / 5年经验</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <h2>专业技能</h2>
+    <ul>
+      <li><strong>前端框架与生态</strong>：精通React和Vue全家桶，熟练掌握Hooks、Composition API、状态管理（Redux/Mobx/Pinia）。深度理解虚拟DOM、Diff算法、Fiber架构等底层原理。熟练TypeScript开发，熟悉Next.js SSR/SSG框架，掌握Vite/Webpack构建优化。熟练Less预处理器和TailwindCSS原子化样式方案。具备组件库设计与开发经验。</li>
+      <li><strong>AI应用开发</strong>：了解LLM应用开发流程，实践过Dify Agent工作流编排，了解Agent工作模式（ReAct、Plan-and-Execute、LangGraph状态图）。系统学习过机器学习、深度学习理论知识，熟悉神经网络、Transformer架构、注意力机制等核心概念。具备与算法团队协作能力，集成过SAM等CV模型，参与过多模态AI产品功能开发。</li>
+      <li><strong>性能优化与SEO</strong>：擅长前端性能优化，实现过多层缓存架构、SSR优化、代码分割、懒加载。熟悉HTTP缓存策略、Core Web Vitals优化。掌握SEO全链路优化，包括Schema数据、Hreflang多语言、Sitemap管理。</li>
+      <li><strong>工程化与架构能力</strong>：熟悉pnpm + Monorepo + Turbo工程化体系，掌握依赖管理、增量构建、智能缓存、Changesets版本管理。熟练CLI工具开发（AST语法树处理、代码生成），了解CI/CD自动化流程与多环境部署。</li>
+      <li><strong>Vibe Coding与AI辅助开发</strong>：熟练使用Cursor、Claude Code等AI辅助编程工具，擅长搭建高效工作流。深度实践MCP协议开发，打通设计-开发-测试全链路自动化。掌握AI代码审查、AI生成MR描述等工作提效场景。</li>
+      <li><strong>跨端与全栈开发</strong>：具备Electron桌面端、ReactNative和HybridH5开发经验，掌握Node和Python服务端开发。</li>
+      <li><strong>计算机基础</strong>：计算机基础扎实，熟悉数据结构与算法、网络协议(TCP/IP、HTTP/HTTPS、WebSocket)、操作系统原理。良好的英语能力（坚持背单词1200+天），能熟练阅读英文技术文档，国外技术社区活跃。</li>
+    </ul>
+
+    <h2>
+      <span>开源项目</span>
+      <span class="github-link">(<a href="https://github.com/LynnCen" target="_blank">@LynnCen</a>)</span>
+    </h2>
+    <ul>
+      <li><strong><a href="https://github.com/LynnCen/gitlab-mcp" target="_blank">GitLab MCP</a></strong> - 基于MCP协议的GitLab自动化工具，支持AI驱动的代码审查、MR自动化管理、行内评论等功能。</li>
+      <li><strong><a href="https://github.com/LynnCen/LynKit" target="_blank">LynKit</a></strong> - 现代化的React组件库，采用Monorepo架构，提供UI组件、Hooks、工具函数和图标系统。</li>
+      <li><strong><a href="https://github.com/LynnCen/translink-i18n" target="_blank">TransLink I18n</a></strong> - 前端国际化解决方案，提供CLI工具（AST智能提取、AI自动翻译）+ Runtime库。</li>
+      <li><strong><a href="https://github.com/LynnCen/picto" target="_blank">Picto</a></strong> - 图标管理CLI工具，支持从Figma、Iconfont自动拉取图标并生成React/Vue/Svelte组件。</li>
+    </ul>
+
+    <h2>资格证书</h2>
+    <ul>
+      <li>软件设计师（中级） | 大学英语四级（CET-4）</li>
+    </ul>
+
+    <h2>教育经历</h2>
+    <div class="work-item">
+      <div class="work-header"><strong>复旦大学</strong> | 电子信息/计算与智能创新学院（在读非全硕士研究生） | 2025 - 2028</div>
+    </div>
+    <div class="work-item">
+      <div class="work-header"><strong>丽水学院</strong> | 数字媒体技术/计算机学院（本科） | 2017 - 2021</div>
+    </div>
+
+    <h2>工作经历</h2>
+    <div class="work-item">
+      <div class="work-header"><strong>稿定科技</strong> | AI前端开发工程师 | 2025/5 - 至今</div>
+      <p class="work-desc">负责 InsMind AI+ 智能创作平台前端与多模态工具链开发，建设无限画布编辑器与搜索推荐、SSR/SEO 等核心工程体系。</p>
+
+
+    </div>
+    <div class="work-item">
+      <div class="work-header"><strong>阿里巴巴</strong> | 前端开发工程师 | 2023/3 - 2025/5</div>
+      <p class="work-desc">负责跨境电商逆向物流系统与瓴羊AI智能客服工作台前端架构，实现退货流程、仓库工作台及WebRTC实时通信等能力。</p>
+    </div>
+    <div class="work-item">
+      <div class="work-header"><strong>四川盛通智联网络科技有限公司</strong> | 前端开发工程师 | 2021/6 - 2023/2</div>
+      <p class="work-desc">独立负责 TMM 实时聊天软件（土耳其版微信）PC 端全链路开发，涵盖 IM、Electron 桌面端、大文件传输与后台系统。</p>
+    </div>
+
+    <h2>项目经验</h2>
+
+    <div class="project">
+      <div class="project-title">项目一：<a href="https://www.insmind.com/" target="_blank" rel="noopener">InsMind</a> AI+智能创作平台与国际化产品体系 | 稿定科技</div>
+      <div class="project-meta">技术栈：Vue + React + TypeScript + PixiJS/WebGL + Agent + LangGraph + Dify + SAM + WASM + SSE </div>
+      <div class="project-content">
+        <p><strong>业务背景：</strong><a href="https://www.insmind.com/" target="_blank" rel="noopener">InsMind</a>是全球化AI图像/视频创作平台，面向海外多市场提供「AI+智能设计编辑器」（对话、抠图/改图、视频生成等）与国际化增长体系（落地页/多支付），以自然语言交互降低创作门槛；<span class="highlight">巅峰MAU 1500 万+，单月新增 1200 万+</span>，全球累计 <span class="highlight">100M+ 图片/视频创作</span>，AI Agent 单 prompt 图文视频一体生成，100+ AI 模板、18 种语言覆盖。</p>
+        
+        <p><strong>AI Agent对话系统：</strong>负责对话端核心架构与工程落地：前端以「UI/业务/服务」三层解耦消息状态机与渲染，基于 SSE + TransformStream 支撑流式增量更新与多类型消息展示；后端构建 Qwen-Agent 多 Agent 路由体系，结合 ReAct 与 Plan-and-Execute/LangGraph 编排多步任务，并通过工具级中断恢复保障长链路生成的可控性与可恢复性。</p>
+        
+        <p><strong>AI工具链集成：</strong>（1）<strong>AI抠图/绘图/变清晰</strong>：基于Dify搭建工作流管线接入多模态大模型实现；（2）<strong>AI智能选区/换背景</strong>：集成Meta SAM模型实现智能图像分割，双Canvas架构（蒙版存储+交互预览），RLE编码解析 + 内阴影描边算法实现高亮边框；（3）<strong>图片压缩/格式转换</strong>：WASM加载MozJPEG(C++)/ImageQuant(Rust)算法，纯前端实现<span class="highlight">压缩率80%+</span>；（4）<strong>AI视频生成</strong>：独立负责从0到1落地（文生视频/图生视频/视频特效），对接Dify工作流动态获取模型配置，利用指数退避算法优化轮询频率 + 超时熔断机制保障服务稳定性，实现进度实时追踪与异常恢复。</p>
+        
+        <p><strong>编辑器基座化架构：</strong>基于 Kernel‑X搭建多产品共享基座，采用 Token 依赖注入 + Manifest 依赖声明/拓扑编排 + 插件生命周期与按需加载，构建多租户配置驱动的可插拔架构；<span class="highlight">消除万级行重复代码，新产品交付周期缩短55%</span>。</p>
+        
+        <p><strong>落地页系统与SSR/SEO优化：</strong>建设配置驱动的多语言落地页SSR平台，运营通过CMS零代码搭建页面；在SEO侧，通过SSR输出可抓取HTML，自动生成多类 Schema.org 结构化数据、Hreflang 多语言信号及 Sitemap/Robots 管理，系统化提升自然流量；在性能侧，构建多层缓存与 HTTP 缓存策略，显著优化 TTFB 和首屏渲染速度。</p>
+        
+        <p><strong>多支付方式接入：</strong>搭建三层支付架构，接入 Stripe/PayPal/Payssion 等 <span class="highlight">13 种支付</span>，交付多币种多语言 PDF 账单。</p>
+        
+        <div class="result-line"><strong>项目成果：</strong>自然流量 30%→60%+，长尾词 10,000+，点击率 +30%，缓存 99%+、TTFB &lt; 500ms；AI 使用率 +300%、满意度 90%+；支付成功率 95%+，<span class="highlight">获客成本降 40%</span>；基座化减重复代码 15,000+ 行、交付周期 -55%。</div>
+      </div>
+    </div>
+
+    <div class="project">
+      <div class="project-title">项目二：<a href="https://www.gaoding.com/" target="_blank">稿定设计</a>/<a href="https://huaban.com/discovery" target="_blank">花瓣网</a>/<a href="https://www.gaoding.art/" target="_blank">AI社区</a> 搜索推荐与工程化建设 | 稿定科技</div>
+      <div class="project-meta">技术栈：Vue 3 + React 18 + TypeScript + pnpm Workspace + Turbo + Changesets + GitLab CI/CD + Docker</div>
+      <div class="project-content">
+        <p><strong>业务背景：</strong><a href="https://www.gaoding.com/" target="_blank">稿定设计</a>是全场景在线视觉设计平台（<span class="highlight">累计用户亿级</span>，月活数千万级），<a href="https://huaban.com/discovery" target="_blank">花瓣网</a>是创意设计灵感与图片素材平台（<span class="highlight">日访问千万级、月访问亿级</span>），<a href="https://www.gaoding.art/" target="_blank">稿定AI社区</a>是面向设计师的AI创意社区。负责全站搜索推荐系统开发和大仓架构设计。</p>
+        
+        <p><strong>搜索推荐系统：</strong>负责稿定/花瓣/AI 社区搜索全链路前端，覆盖引导层、理解与召回排序策略层的对接与展示；实现灵感词推荐（共现词+触发策略）、搜索底纹词，提升探索与内容消费深度；维护花瓣网素材搜索、采集搜索、以图搜图等场景。</p>
+        
+        <p><strong>端一体化与性能优化：</strong>主导 Design Token 工程，将 UI 规范转化为 CSS 变量体系，保障 Web/移动/桌面端视觉一致；接入 importmap 工具 wpm 实现外部依赖动态加载与版本管理，配置 CDN 与 HTTP 缓存策略，Core Web Vitals 达标。</p>
+        
+        <p><strong>Monorepo大仓建设：</strong>参与前端 Monorepo 大仓架构建设，基于 pnpm Workspace + Catalog 统一 45+ 依赖版本，集成 Turbo 实现增量构建与并行执行；设计七阶段 CI/CD 流程，Pipeline 耗时由 30min 降至 12min，缓存命中率 85%+。</p>
+        
+        <p><strong>提效工具：</strong><strong>GitLab MCP</strong>：基于MCP实现AI代码审查与MR描述生成；<strong>国际化工程</strong>：全链路自动化方案，CLI基于AST提取文案、维格表双向同步、AI翻译18种语言，Runtime动态切换与按需加载，形成提取→翻译→同步→运行闭环；<strong>图标管理工程</strong>：Figma/Iconfont设计稿监听更新，生成多框架组件(React/Vue/Svelte)，Tree Shaking与TS类型，按需引入。</p>
+        
+        <p><strong>全链路监控与数据：</strong>接入AB实验与链路监控（性能/异常/埋点），建设素材下载转化统计，持续优化CTR、付费转化指标。</p>
+        
+        <div class="result-line"><strong>项目成果：</strong><span class="highlight">搜索转化率+25%，推荐CTR+35%</span>；代码复用率提升85%、跨项目开发效率提升50%；<span class="highlight">CI/CD Pipeline耗时30min→12min</span>，部署成功率99.5%，日均部署5次→20次；提效工具使研发效率提升40%+，线上故障率&lt;0.1%。</div>
+      </div>
+    </div>
+
+    <div class="project">
+      <div class="project-title">项目三：跨境电商逆向物流系统（淘海外/淘日本） | 阿里巴巴</div>
+      <div class="project-meta">技术栈：React 18 + ICE + SSR/SSG + TypeScript + Vite + Scss + Fusion + Lerna + Node.js + Monorepo + 跨端H5</div>
+      <div class="project-content">
+        <p><strong>业务背景：</strong>阿里巴巴跨境电商逆向物流核心系统，服务淘海外、淘日本、香港本地退等多站点。覆盖退货全链路：预约→跨境追踪→仓库质检→退款。负责前端架构与核心开发，Rax 迁 ICE 重构，主导组件库与 SSR 性能优化。</p>
+        
+        <p><strong>跨境退货业务：</strong>负责退货预约核心流程（商品选择→驿站配置→运费计算→支付确认），采用适配器模式设计业务组件，一套代码适配淘海外、香港本地退三站点，保障多站点体验一致与维护可控。实现差异化支付架构（0元/微信/国际支付），通过策略模式动态切换支付渠道，支持多币种多语言账单输出。支持服务端配置驱动页面与流程，便于运营快速迭代。</p>
+        
+        <p><strong>组件库与SSR架构：</strong>主导 Odin-JP 基础物料库建设，Monorepo 收敛（API/Hooks/Utils/UI），UI 主题色动态配置与 UnoCSS 主题插件集成。基于 Wormhole 实施全链路 SSR 改造，采用流式渲染与数据请求并行、首屏渐进式渲染策略，<span class="highlight">FCP 由 1500ms 优化至 620ms（提升 57%）</span>；SSG 骨架屏方案（SsgShimPlugin 构建时预渲染）解决白屏问题。</p>
+        
+        <p><strong>性能优化：</strong>前端数据预取（ZCache + DataPrefetch）、代码分割与路由级懒加载，优化首屏加载与资源按需加载。</p>
+        
+        <p><strong>其他：</strong>仓库工作台（状态机流转、扫码枪/打印机集成、xlsx 大数据导出与 Base64 图片压缩，质检传输效率+70%）；全链路监控与跨端（SPM 埋点 + JSTracker、Windvane/PHA 容器）。</p>
+        
+        <div class="result-line"><strong>项目成果：</strong><span class="highlight">退货流程线上化率+60%，退款成功率提升至80%</span>，仓库操作效率+40%；FCP 1500ms→620ms（+57%），组件复用率+60%，维护成本−70%；问题定位效率+60%，系统稳定性99.9%。</div>
+      </div>
+    </div>
+
+    <div class="project">
+      <div class="project-title">项目四：瓴羊AI智能客服工作台 | 阿里巴巴</div>
+      <div class="project-meta">技术栈：React 18 + TypeScript + Agora RTC + WebSocket + SSE + Mobx + Ant Design</div>
+      <div class="project-content">
+        <p><strong>业务背景：</strong>阿里巴巴全渠道智能客服解决方案，覆盖服务全链路，负责视频客服与 AI 助手的前端架构与核心开发。</p>
+        
+        <p><strong>实时视频通信系统：</strong>基于 Agora RTC 构建 WebRTC 实时视频能力，设计双端状态机与 WebSocket 信令、会话状态管理；多窗口架构（主屏/侧边列表/悬浮小窗/画中画），支持拖拽、最小化、多会话切换。核心优化：设备健康度预检前置拦截异常；级联重连（网络抖动 5 秒内恢复），通话异常率降 15%；超时熔断（30 秒无响应挂断+服务降级），保障稳定性。</p>
+        
+        <p><strong>AI 智能助手系统：</strong>扩展 IM 消息协议，新增 AI 专属消息类型，SSE 流式输出实现回复逐字展示；智能轮询与指数退避控制请求频率，降低大模型压力。搭建Agent-lab可视化配置平台，支持技能编排、话术绑定、知识库检索，配置即上线。</p>
+        
+        <p><strong>客服效能：</strong>快捷回复系统（常用话术/商品卡片/订单查询一键发送）、智能标签系统（用户意图识别+自动打标）、会话摘要自动生成（AI 总结+关键信息提取），客服平均响应时间缩短 40%。</p>
+        
+        <div class="result-line"><strong>项目成果：</strong>通话连接率98%+、AI采纳率65%，<span class="highlight">客服人效提升50%</span>、用户满意度92%，峰值万级在线。</div>
+      </div>
+    </div>
+
+    <div class="project">
+      <div class="project-title">项目五：TMM实时聊天软件 | 四川盛通智联网络科技有限公司</div>
+      <div class="project-meta">技术栈：React + TypeScript + Electron + Mobx + WebSocket + IndexDB/Dexie + AWS S3 + Quill</div>
+      <div class="project-content">
+        <p><strong>业务背景：</strong>面向海外市场的跨平台即时通讯产品，独立负责 PC 端全链路前端架构与核心功能开发。</p>
+        
+        <p><strong>IM 架构与消息系统：</strong>基于关注点分离将聊天模块重构为五层架构（API / 数据 / 事件 / 状态 / 视图），依赖注入实现层间解耦。<strong>消息顺序与可靠性</strong>：消息 ID 去重结合服务端序号全局排序，保障多端消息顺序一致；ACK 确认与重试机制保障必达。<strong>长列表性能</strong>：虚拟滚动与分页加载支撑万级消息流畅渲染，响应式状态管理实现未读数、在线状态与会话列表的细粒度更新，列表滚动流畅度提升 60%。支持已读回执与消息撤回。</p>
+        
+        <p><strong>实时通信与弱网保障：</strong>WebSocket 长连接，心跳保活与 ACK 确认保障消息必达；级联重连策略（网络抖动自动恢复、指数退避重试）降低断线率；离线消息队列本地落盘，恢复后增量同步，避免消息丢失。基于 CAP 设计多端状态一致（置顶/静音/已读），解决跨端冲突。消息到达率 99.9%，端到端延迟低于 100ms。</p>
+        
+        <p><strong>文件传输与本地存储：</strong>基于AWS S3 的分片上传、并行上传、断点续传；流式下载配合背压控制，平衡内存与I/O。本地资源采用LRU缓存策略；基于IndexedDB构建本地搜索引擎，联合索引与Web Worker隔离计算线程，大幅减少检索耗时。</p>
+        
+        <div class="result-line"><strong>项目成果：</strong>上线后 <span class="highlight">DAU 超百万、用户覆盖率提升 20%</span>，消息到达率 99.9%、延迟低于 100ms，整体稳定可用。</div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

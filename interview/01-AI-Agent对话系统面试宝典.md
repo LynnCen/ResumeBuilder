@@ -1,48 +1,53 @@
 # AI Agent 对话系统面试宝典
 
-> **适用简历条目**：InsMind AI+智能创作平台 · AI Agent 对话系统  
-> **技术栈**：Vue + React + TypeScript + Agent + LangGraph + Dify + SSE  
-> **定位**：前端主导、全栈参与，系统性答题参考
+> **适用简历条目**：InsMind AI+智能创作平台 · AI Agent 对话系统
+> **技术栈**：Vue + React + TypeScript + Agent + LangGraph + Dify + SSE
+> **使用方式**：每个模块都是一段完整的面试口述稿，对照朗读或背诵关键要点
 
 ---
 
 ## 目录
 
-1. [总览：我做了什么（一句话定位）](#一总览我做了什么一句话定位)
+1. [开场总述：一句话定位](#一开场总述一句话定位)
 2. [系统架构：三层分层设计](#二系统架构三层分层设计)
 3. [Agent 体系与工作模式](#三agent-体系与工作模式)
-4. [ReAct 架构](#四react-架构)
+4. [ReAct 架构](#四react-架构推理与行动循环)
 5. [LangGraph 状态图编排](#五langgraph-状态图编排)
 6. [工具调用（Function Calling）](#六工具调用function-calling)
-7. [中断与恢复机制](#七中断与恢复机制)
-8. [SSE 流式推送与消息缓冲队列](#八sse-流式推送与消息缓冲队列)
-9. [消息系统：12 种消息类型实时渲染](#九消息系统12-种消息类型实时渲染)
+7. [中断与恢复机制](#七中断与恢复机制interruptmanager)
+8. [SSE 流式推送与消息处理](#八sse-流式推送与消息处理)
+9. [消息系统：多种消息类型渲染](#九消息系统多种消息类型渲染)
 10. [Dify 工作流集成](#十dify-工作流集成)
 11. [性能优化亮点](#十一性能优化亮点)
-12. [常见面试题 Q&A](#十二常见面试题-qa)
+12. [高频面试题 Q&A](#十二高频面试题-qa)
 
 ---
 
-## 一、总览：我做了什么（一句话定位）
+## 一、开场总述：一句话定位
 
-**标准答法（30 秒版）**：
+### 标准回答（30 秒版）
 
-> 我在稿定 InsMind 平台主导了前端 AI Agent 对话系统的架构设计，基于 Qwen-Agent 框架集成豆包/GPT 大模型，采用三层架构（展示层/业务层/服务层）深度集成 Dify Agent 工作流。实现了三种 Agent 工作模式：普通对话（ReAct）、图片生成（批量并行）、视频生成（状态图编排）。核心技术亮点包括：消息缓冲队列保证高并发下消息有序处理；SSE 流式推送 + TransformStream 分段 JSON 解析实现 12 种消息类型实时渲染；设计 InterruptManager 中断恢复机制，实现工具级断点续传。
+在稿定 InsMind 平台，我主导了前端 AI Agent 对话系统的整体架构设计。系统基于 Qwen-Agent 框架，集成了豆包和 GPT 大模型，采用「展示层 / 业务层 / 服务层」三层架构，深度对接了 Dify Agent 工作流。
 
-**总 → 分 → 总 框架**：
+在工作模式上，我们实现了三种 Agent 模式：**普通对话模式**采用 ReAct 架构，**图片生成模式**支持批量并行生成，**视频生成模式**用 LangGraph 状态图来管理长时任务的生命周期。
+
+核心技术亮点是三个：第一，用消息缓冲队列保证高并发下消息有序处理；第二，SSE 流式推送加上 TransformStream 分段 JSON 解析，支持 12 种消息类型的实时渲染；第三，自研 InterruptManager 中断恢复机制，实现了工具级别的断点续传。
+
+### 总 → 分 → 总 答题框架
 
 ```
-【总】什么系统、做了什么
+【总】做了什么
   └─ 前端 AI Agent 对话系统，三层架构 + 三种模式
-  
-【分】核心技术点（展开讲）
-  ├─ Agent 体系与架构
-  ├─ ReAct / LangGraph 工作模式
-  ├─ 工具调用机制
-  ├─ 中断恢复机制
+
+【分】核心技术展开
+  ├─ Agent 体系与架构分层
+  ├─ ReAct 推理行动循环
+  ├─ LangGraph 状态图编排
+  ├─ Function Calling 工具调用链路
+  ├─ InterruptManager 中断恢复
   └─ SSE 流式消息处理
-  
-【总】技术价值与结果
+
+【总】价值与结果
   └─ AI 工具使用率提升 300%，用户满意度 90%+
 ```
 
@@ -50,49 +55,33 @@
 
 ## 二、系统架构：三层分层设计
 
-### 2.1 整体架构图
+### 2.1 前端三层架构
 
-```
-┌─────────────────────────────────────────────────┐
-│               展示层 (UI Layer)                   │
-│  ChatWrap → Message → Bubble → ChatSender         │
-│  职责：UI 渲染、用户交互、消息展示                  │
-└─────────────────────────────────────────────────┘
-                      ↕ 事件驱动
-┌─────────────────────────────────────────────────┐
-│              业务层 (Business Layer)              │
-│  MessageHandler → SSEManager → ToolProcessor     │
-│  职责：消息处理、状态管理、工具调用、批量追踪        │
-└─────────────────────────────────────────────────┘
-                      ↕ HTTP/SSE
-┌─────────────────────────────────────────────────┐
-│               服务层 (Service Layer)              │
-│  Dify 工作流 → 豆包/GPT 大模型 → AI 工具服务       │
-│  职责：AI 推理、工具调用、结果生成                  │
-└─────────────────────────────────────────────────┘
-```
+整个对话系统在前端分为三层，每一层职责非常明确。
 
-### 2.2 后端七层架构（Qwen-Agent）
+**展示层（UI Layer）** 负责纯粹的界面渲染，包括消息气泡、输入框、图片卡片、视频播放器等组件。展示层不关心数据从哪里来，只通过 Observer 模式监听业务层的数据变化，被动更新 UI。
 
-| 层级 | 组件 | 职责 |
-|------|------|------|
-| 接入层 | FastAPI Routes | HTTP 请求、Token 认证、SSE 流式响应 |
-| 服务层 | GaodingAgentService | 业务编排、消息转换、动态 Agent 创建 |
-| 路由层 | GaodingRouter | 多 Agent 智能路由（基于 LLM 决策） |
-| Agent 层 | AdvancedAgent / OrdinaryAgent | Plan-and-Execute / ReAct 模式 |
-| 执行层 | GaodingAssistant | 工具调用、并行执行、中断恢复 |
-| 工具层 | ToolManager / MCP 工具 | 动态工具加载、MCP 协议调用 |
-| 基础设施 | ThreadManager / RedisManager | 持久化、状态管理、认证 |
+**业务层（Business Layer）** 是整个系统的核心，由 MessageHandler、SSEManager 和 ToolProcessor 组成。MessageHandler 管理所有消息的状态机流转，负责解析 SSE 数据、追踪批量工具调用、过滤展示逻辑。SSEManager 处理流式连接的建立、重连和心跳保活。ToolProcessor 负责将工具响应转换为前端可用的 Tool 对象。
 
-### 2.3 为什么用三层架构？
+**服务层（Service Layer）** 屏蔽了不同 AI 服务的接口差异，无论后端是 Dify 工作流还是 Qwen-Agent，前端都通过统一的 SSE 接口接收数据，不需要感知底层 AI 框架的细节。
 
-**面试答法**：
+### 2.2 后端七层架构
 
-- **展示层**：只负责渲染，不关心数据来源；通过事件总线和 Observer 模式接收数据
-- **业务层**：MessageHandler 处理所有消息的状态机流转，隔离 SSE 协议细节
-- **服务层**：屏蔽不同 AI 服务（Dify/Qwen-Agent）的接口差异，统一抽象
+后端采用了更细粒度的七层设计，从上到下依次是：
 
-这样做的收益：**前后端解耦**，前端不依赖具体 AI 框架；**可测试性强**，业务层可单独测试；**扩展性好**，新增消息类型只需修改 MessageHandler。
+| 层级 | 组件 | 核心职责 |
+|------|------|---------|
+| 接入层 | FastAPI Routes | HTTP 请求处理、Token 认证、SSE 流式响应 |
+| 服务层 | GaodingAgentService | 业务编排、消息格式转换、动态 Agent 创建 |
+| 路由层 | GaodingRouter | 基于 LLM 决策的多 Agent 智能路由 |
+| Agent 层 | AdvancedAgent / OrdinaryAgent | Plan-and-Execute 或 ReAct 模式执行 |
+| 执行层 | GaodingAssistant | 工具调用、并行执行控制、中断恢复 |
+| 工具层 | ToolManager / MCP 工具 | 动态工具加载、MCP 协议规范化调用 |
+| 基础设施 | ThreadManager / RedisManager | 会话持久化、分布式状态管理、认证 |
+
+### 2.3 为什么这样分层？
+
+三层架构的核心价值在于**解耦**。展示层不依赖具体 AI 框架，业务层可以独立测试，服务层换后端只需改一处。这个设计让我们能在不改前端代码的情况下，从 Dify 工作流切换到 Qwen-Agent，或者新接一个模型服务。
 
 ---
 
@@ -100,812 +89,486 @@
 
 ### 3.1 什么是 AI Agent？
 
-**定义**：AI Agent 是能够**自主感知环境、推理决策、采取行动**以实现特定目标的智能系统。
+AI Agent 是一种能够**自主感知环境、推理决策、采取行动**以完成特定目标的智能系统，和普通 AI 对话最本质的区别在于「行动能力」——它不仅能输出文字，还能调用外部工具完成真实任务。
 
-**四大核心特征**：
-- **自主性**：无需人工干预，基于 LLM 推理自主完成
-- **感知能力**：获取用户意图、上下文、工具结果
-- **行动能力**：调用外部工具（图片生成、视频生成、改图等）
-- **记忆能力**：短期对话历史（最近 20 条），维持上下文
+从学术定义来看，一个完整的 Agent 有四个核心特征：**自主性**（无需人工干预，LLM 自主判断下一步）、**感知能力**（理解用户意图、读取上下文、获取工具结果）、**行动能力**（调用图片生成、视频生成、AI 改图等外部工具）、**记忆能力**（短期对话历史，我们保留最近 20 条，维持上下文连贯）。
 
-### 3.2 项目中实现的三种 Agent 模式
+### 3.2 项目中实现的 Agent 分类
 
-| 维度 | OrdinaryAgent（普通模式） | AdvancedDesignAgent（高级模式） |
+从理论上讲，Agent 从简单到复杂可以分为五类：简单反射型、基于模型的反射型、基于目标的 Agent、基于效用的 Agent、学习型 Agent。我们系统属于**基于目标的 Agent**——有明确的设计任务目标，通过 LLM 推理加工具调用逐步完成。
+
+### 3.3 系统中的三种工作模式
+
+| 维度 | 普通模式（OrdinaryAgent） | 高级设计模式（AdvancedDesignAgent） |
 |------|--------------------------|-------------------------------|
-| 架构模式 | ReAct | Plan-and-Execute + LangGraph |
-| 使用场景 | 图片/视频生成 | 复杂设计任务（IP、VI 设计） |
+| 核心架构 | ReAct（推理行动循环） | Plan-and-Execute + LangGraph 状态图 |
+| 适用场景 | 图片/视频单次生成 | 复杂设计任务（IP 全链路、VI 设计） |
 | LLM 调用次数 | 1-3 次 | 5-15 次 |
-| 响应时间 | 3-10 秒 | 10-60 秒 |
-| 是否使用 LangGraph | 否 | 是（需求理解→规划→执行） |
+| 平均响应时间 | 3-10 秒 | 10-60 秒 |
+| 是否使用 LangGraph | 否 | 是 |
 
-### 3.3 多 Agent 路由机制（GaodingRouter）
+### 3.4 多 Agent 路由机制
 
-```
-用户输入
-  ↓
-Router（基于 LLM 判断）
-  ├─ "生成一张图片" → OrdinaryAgent（ReAct）
-  ├─ "帮我设计一套企业 VI" → AdvancedDesignAgent（Plan-and-Execute）
-  └─ "明天天气怎么样" → 直接回复（无工具调用）
-```
+路由层（GaodingRouter）本身也是一个由 LLM 驱动的决策模块。每次请求进来，路由层会先把用户消息发给 LLM，带上两个子 Agent 的描述，让 LLM 自己判断：这个请求我能直接回答，还是需要转给 AdvancedDesignAgent 处理复杂任务，还是交给 OrdinaryAgent 做简单生成？
 
-**关键提示词**：
-```
-你有下列帮手：AdvancedDesignAgent（复杂设计）、OrdinaryAgent（简单生成）
-当你能直接回答时，忽略帮手直接回复；
-当你的能力无法达成请求时，选择合适的帮手：
-Call: [帮手名称]
-```
+这个设计的核心是把路由决策权交给 LLM 而不是硬编码规则，使得路由更智能、更灵活，对新业务场景的适配只需要更新 Agent 描述即可。
 
 ---
 
-## 四、ReAct 架构
+## 四、ReAct 架构：推理与行动循环
 
-### 4.1 什么是 ReAct？
+### 4.1 ReAct 是什么？
 
-**来源**：论文《ReAct: Synergizing Reasoning and Acting in Language Models》(2023)
+ReAct 来自 2023 年的论文《ReAct: Synergizing Reasoning and Acting in Language Models》，核心思想是让 LLM 交替进行**推理（Reasoning）**和**行动（Acting）**，形成一个「思考 → 行动 → 观察 → 再思考」的闭环。
 
-**核心思想**：LLM 交替进行**推理（Reasoning）**和**行动（Acting）**，形成 Thought → Action → Observation 循环。
+这个模式解决了一个关键问题：AI 不是一步就给出答案，而是像人一样，先思考要做什么，做了之后再看结果，再决定下一步。
 
-### 4.2 ReAct 执行流程
+### 4.2 ReAct 的执行流程
+
+以「帮我生成一张科技海报」为例，一轮 ReAct 循环是这样的：
 
 ```
-Observation: 用户输入"帮我生成一张科技海报"
-    ↓
-Thought: 用户需要科技风格海报，调用图片生成工具
-    ↓
-Action: function_call { name: "图片生成", args: { prompt: "科技海报，蓝色调" } }
-    ↓
-Observation: 工具返回图片 URL = https://...jpg
-    ↓
-Thought: 图片生成成功，任务完成
-    ↓
-Final Answer: 已为您生成科技海报 + 图片附件
+Observation（观测）：用户输入"帮我生成一张科技海报"
+
+Thought（推理）：用户需要科技风格海报，需要调用图片生成工具，
+               参数应该包含科技主题和配色建议
+
+Action（行动）：调用「图片生成」工具，传入 prompt = "科技海报，蓝色调，未来感"
+
+Observation（观测）：工具返回图片 URL
+
+Thought（推理）：图片生成成功，任务完成，可以把结果返回给用户
+
+Final Answer：已为您生成科技海报，请查看附件
 ```
 
-### 4.3 项目中的 ReAct 实现
+整个过程中 LLM 是核心大脑，每一步的「Thought」都是 LLM 在推理，每一步的「Action」都是实际调用工具。
 
-**OrdinaryAgent 核心循环**：
+### 4.3 项目中 ReAct 的工程实现要点
 
-```python
-def _run(self, messages):
-    while True:
-        # Reasoning：调用 LLM 推理
-        response = llm.chat(messages, tools=self.tools)
-        
-        if response.function_call:
-            # Acting：执行工具
-            tool_result = self._execute_tool(
-                response.function_call.name,
-                response.function_call.arguments
-            )
-            messages.append(tool_result)
-        else:
-            # Final Answer：返回结果
-            yield response.content
-            break
-```
+在工程层面，ReAct 的实现是一个 while 循环：每次循环都把当前完整的消息历史发给 LLM，LLM 返回两种结果之一——如果是 `function_call`（工具调用指令），就执行工具，把结果追加到消息历史，再进入下一轮循环；如果是普通文本，说明任务完成，退出循环返回结果。
 
-### 4.4 ReAct vs Plan-and-Execute 对比
+这个设计的精髓在于**消息历史是唯一的状态载体**，每一轮推理都建立在完整上下文之上，LLM 能看到所有之前的工具结果，这是实现多步推理的基础。
 
-| 维度 | ReAct | Plan-and-Execute |
-|------|-------|-----------------|
-| 规划方式 | 边走边想（每步调用 LLM） | 先全局规划再执行 |
-| 适用场景 | 单步或少步工具调用 | 复杂多步任务（VI 设计、IP 设计） |
-| LLM 消耗 | 较少 | 较多 |
-| 灵活性 | 高（可动态调整） | 中（计划一旦生成较固定） |
-| 项目应用 | OrdinaryAgent（图片/视频生成） | AdvancedDesignAgent（复杂设计） |
+### 4.4 ReAct 的优缺点与适用边界
+
+ReAct 的优点是简单直观、可解释性强——每一步推理都是透明的，出问题很容易定位。缺点是对于复杂多步任务，每步都要调用 LLM，成本较高，且缺乏全局规划能力。
+
+所以我们在系统中做了区分：**简单任务**（生成一张图、一段视频）用 ReAct；**复杂任务**（VI 全套设计、IP 全链路）用 Plan-and-Execute 加 LangGraph。
 
 ---
 
 ## 五、LangGraph 状态图编排
 
-### 5.1 什么是 LangGraph？
+### 5.1 LangGraph 解决什么问题？
 
-LangGraph 是 LangChain 生态的**状态图编排框架**，将 Agent 的执行过程建模为有向图（节点 + 边），适合实现 **Plan-and-Execute** 模式。
+对于复杂的多步设计任务，纯 ReAct 模式有两个明显缺陷：一是没有全局规划，每一步都是临时决策，容易出现方向跑偏；二是一旦中间某步失败，无法精准定位和恢复。
 
-**核心概念**：
-- **State（状态）**：贯穿整个流程的共享数据
-- **Node（节点）**：具体的处理函数（需求理解、任务规划、任务执行）
-- **Edge（边）**：节点之间的条件跳转逻辑
+LangGraph 引入了**状态图**的概念，把 Agent 的执行过程建模为一张有向图，由**节点（Node）**、**边（Edge）**和**共享状态（State）**三个要素构成。节点是具体的处理函数（需求理解、任务规划、任务执行），边是节点之间的跳转逻辑（可以有条件），状态是贯穿整个流程的共享数据，每个节点都能读写。
+
+这个模型最大的价值是**让复杂流程声明式化**——用图结构描述业务逻辑，而不是用 if/else 嵌套，可读性和可维护性都大幅提升。
 
 ### 5.2 项目中的 LangGraph 应用
 
-**用于 AdvancedDesignAgent 的三节点状态图**：
+我们在 AdvancedDesignAgent 中设计了一个三节点状态图，对应完整的「需求理解 → 任务规划 → 任务执行」流程。
 
-```python
-from langgraph.graph import StateGraph, END
+**需求理解节点**：LLM 分析用户输入是否提供了足够信息。如果信息不完整（比如只说"帮我设计 VI"但没说公司名、行业、风格），节点会向用户追问，循环等待；一旦信息足够，就跳转到任务规划节点。
 
-class State(TypedDict):
-    messages: List[Message]     # 对话历史
-    tasks: List[str]            # 任务列表（TODO.md）
-    current_task_index: int     # 当前执行到第几个任务
+**任务规划节点**：LLM 根据完整需求生成结构化的任务列表（我们叫它 TODO.md），明确列出每个子任务需要调用哪个工具、输入是什么、期望输出是什么。这一步的关键是让 LLM 先全局思考，再执行，避免边做边改方向。
 
-workflow = StateGraph(State)
+**任务执行节点**：按照任务列表循环执行，每完成一个子任务就把结果返回给用户，同时更新任务状态。如果某个任务失败，可以通过中断机制暂停，用户处理后再从断点恢复。
 
-# 三个节点
-workflow.add_node("requirement", requirement_node)    # 需求理解
-workflow.add_node("task_plan", task_plan_node)        # 任务规划
-workflow.add_node("task_execution", task_execution_node) # 任务执行
+### 5.3 视频生成的状态机设计
 
-# 条件边（路由逻辑）
-workflow.add_conditional_edges(
-    "requirement",
-    requirement_router,
-    {
-        "continue": "requirement",  # 信息不足，继续追问
-        "task_plan": "task_plan",   # 信息完整，进入规划
-        "end": END                  # 无需规划，直接结束
-    }
-)
-```
+视频生成是另一种形式的状态图——基于轮询的进度状态机。视频生成属于长时异步任务，通常需要 30 到 120 秒，不可能让 SSE 连接一直开着等。
 
-### 5.3 AdvancedDesignAgent 完整流程
+我们的方案是：提交任务后立刻返回一个 taskId，前端用这个 taskId 轮询进度接口。轮询策略采用**指数退避算法**，初始间隔 3 秒，如果服务端返回「处理中」则继续等待，间隔逐渐拉长，最多轮询 40 次（约 2 分钟）。如果超时，触发**熔断机制**，告知用户稍后重试，避免资源浪费。
 
-```
-用户输入"帮我设计一套企业 VI"
-    ↓
-【需求理解节点】
-    LLM 分析：信息不完整 → 询问"公司名称？行业？风格偏好？"
-    用户回复 → LLM 分析：信息完整
-    ↓
-【任务规划节点】
-    LLM 生成 TODO.md：
-    - [ ] 任务1：设计 Logo（调用：图片生成工具）
-    - [ ] 任务2：设计名片（调用：模板生成工具）
-    - [ ] 任务3：设计信纸（调用：模板生成工具）
-    ↓
-【任务执行节点（循环）】
-    执行任务1 → 返回 Logo → 告知用户
-    执行任务2 → 返回名片 → 告知用户
-    执行任务3 → 返回信纸 → 告知用户
-    ↓
-完成
-```
-
-### 5.4 为什么视频生成也用了"状态图"？
-
-**面试答法**：视频生成因为是长时异步任务（30-120 秒），使用了一种简化的状态机：
-
-```
-提交任务 → function_call（含 taskId）
-    ↓
-获取初始状态 → function_response（progress: 0）
-    ↓
-前端轮询（指数退避算法，每 3 秒查询）
-    ↓
-进度更新（30% → 60% → 100%）
-    ↓
-完成 → 替换占位为真实视频
-```
-
-**指数退避 + 超时熔断**：初始轮询间隔 3 秒，失败后 6 秒、12 秒递增；最多轮询 40 次（约 2 分钟）；超时后触发熔断，提示用户重试。
+这个设计的好处是解耦了生成时间和连接时间，服务端压力更小，前端也不会因为长时间 SSE 连接导致浏览器资源泄漏。
 
 ---
 
 ## 六、工具调用（Function Calling）
 
-### 6.1 工具调用整体链路
+### 6.1 什么是 Function Calling？
 
-```
-前端用户输入
-    ↓
-Dify/Qwen-Agent 将工具描述发送给 LLM
-    ↓
-LLM 决策：调用哪个工具？参数是什么？
-    返回：function_call { name, arguments }
-    ↓
-后端执行工具（图片生成 API / SAM 模型等）
-    ↓
-返回：function_response { result: [{ uri, width, height }] }
-    ↓
-LLM 汇总工具结果，生成最终回复
-    ↓
-前端渲染结果（图片/视频/文本）
-```
+Function Calling 是现代大模型的一项核心能力——LLM 不是只能输出文字，它还能输出一个结构化的「工具调用指令」，告诉程序：我需要调用某个工具，参数是这些。
 
-### 6.2 工具描述格式（MCP 协议）
+这个能力的本质是让 LLM 成为「大脑」而不是「嘴巴」，它负责理解需求、决策用哪个工具、生成合适的参数，真正的执行由后端代码完成。
 
-```json
-{
-  "name": "图片生成",
-  "description": "根据文本描述生成图片，支持多种风格",
-  "parameters": [
-    {
-      "name": "prompt",
-      "type": "string",
-      "description": "图片描述，详细描述内容、风格、色调",
-      "required": true
-    },
-    {
-      "name": "style",
-      "type": "string",
-      "description": "风格代码：realistic/anime/tech",
-      "required": false
-    }
-  ]
-}
-```
+### 6.2 工具调用的完整链路
 
-### 6.3 动态工具加载（无需重启）
+一次完整的工具调用流程分为五个阶段：
 
-**问题**：工具配置频繁更新（新增工具、修改参数），不能每次都重启服务。
+**第一阶段：工具描述传递。** 每次向 LLM 发送消息时，除了对话历史，还会把所有可用工具的名称、功能描述、参数格式一起发过去。工具描述写得好不好直接影响 LLM 的选择准确率，这是提示词工程的重要部分。
 
-**解决方案**：5 秒缓存 + 动态创建工具类
+**第二阶段：LLM 决策。** LLM 推理当前任务是否需要调用工具，如果需要，选择哪个工具，生成什么参数。它返回的不是文字，而是一个结构化的工具调用指令，包含工具名称和 JSON 格式的参数。
 
-```python
-class ToolManager:
-    def __init__(self):
-        self._tools_cache = None
-        self._cache_time = 0
-    
-    def get_tools(self):
-        # 5 秒内直接用缓存
-        if self._tools_cache and (time.time() - self._cache_time) < 5:
-            return self._tools_cache
-        
-        # 从配置服务获取最新工具定义
-        tools_config = self.gdesign_client.get_tools_config()
-        
-        # 用 Python type() 动态创建工具类，注册到 Qwen-Agent
-        self._tools_cache = self.load_dynamic_tools(tools_config)
-        self._cache_time = time.time()
-        return self._tools_cache
-```
+**第三阶段：工具执行。** 后端拦截到工具调用指令，调用对应的工具服务（图片生成 API、视频生成模型、SAM 分割模型等），等待结果。
 
-**价值**：工具热更新，零停机发布，配置与代码解耦。
+**第四阶段：结果回传。** 工具执行完毕，把结果追加到消息历史中，再次调用 LLM，让它根据工具结果生成最终回复或决定是否继续调用更多工具。
 
-### 6.4 工具并行执行（最多 2 个）
+**第五阶段：前端渲染。** 前端接收到工具响应，解析图片 URL、视频 URL 等，渲染到对应的 UI 组件（图片卡片、视频播放器等）。
 
-**问题**：LLM 可能同时调用多个工具（如"文案生成" + "图片生成"），串行执行太慢。
+### 6.3 工具描述的质量决定调用准确率
 
-**解决方案**：`ThreadPoolExecutor` 并行执行，上下文隔离
+一个写得好的工具描述，应该包含三要素：**工具名称**（简洁明了，避免歧义）、**功能描述**（精确说明它能做什么、不能做什么）、**参数定义**（每个参数的类型、含义、是否必需、取值范围）。
 
-```python
-def _execute_tools_parallel(self, tool_calls, max_parallel=2):
-    with ThreadPoolExecutor(max_workers=min(len(tool_calls), max_parallel)) as executor:
-        futures = {}
-        for tool_call in tool_calls:
-            # 复制 RequestContext 到 Worker 线程（避免 contextvars 丢失）
-            copied_ctx = contextvars.copy_context()
-            future = executor.submit(
-                copied_ctx.run,
-                self._execute_tool,
-                tool_call.function_call.name,
-                tool_call.function_call.arguments
-            )
-            futures[future] = tool_call
-        
-        for future in as_completed(futures):
-            yield future.result()
-```
+比如「AI 改图」和「AI 抠图」功能接近，如果描述写得不清楚，LLM 经常会选错。我们在实践中发现，在描述里加上「适用场景」和「不适用场景」能显著提升选择准确率。
 
-**性能提升**：2 个工具各耗时 3 秒 → 串行 6 秒，并行 3 秒，**提升 50%**。
+### 6.4 动态工具加载：热更新不重启
 
-### 6.5 项目中的 12 种 AI 工具
+**问题背景**：我们的工具会频繁迭代，新增工具、修改参数描述、调整工具顺序，如果每次都要重启服务，对线上稳定性影响很大。
 
-| 工具名称 | 功能 | 技术实现 |
-|---------|------|---------|
-| 图片生成 | 文生图 | Dify 工作流 + 多模态大模型 |
-| AI 抠图 | 背景移除 | Dify 工作流管线 |
-| AI 改图 | 局部修改（inPaintReplace） | 多模态大模型 |
-| AI 消除 | 移除物体（inPaintRemove） | 多模态大模型 |
-| AI 变清晰 | 超分辨率 | 图像处理模型 |
-| AI 扩图 | 画布扩展（Outpainting） | 多模态大模型 |
-| AI 智能选区 | 语义分割 | Meta SAM 模型 |
-| AI 换背景 | 背景替换 | SAM + 多模态模型 |
-| 图片压缩 | 无损/有损压缩 | WASM（MozJPEG/ImageQuant） |
-| 视频生成 | 文生视频/图生视频 | Dify 工作流 + 视频生成模型 |
-| 视频特效 | 风格化视频 | 视频生成模型 |
-| 相似图搜索 | 以图搜图 | 向量检索 |
+**解决方案**：工具配置不硬编码在服务里，而是存储在独立的配置服务中。每次请求时，工具管理器先检查内存缓存（有效期 5 秒），缓存过期才去配置服务拉取最新配置，然后动态创建工具实例注册到 Qwen-Agent 框架。
+
+这样实现了工具的「热更新」——运营人员修改工具描述或新增工具，5 秒内就能生效，零停机、零重启。
+
+### 6.5 工具并行执行
+
+当 LLM 决策同时调用多个工具时（比如同时调用「文案生成」和「图片生成」），串行执行会让总耗时等于所有工具耗时之和。我们用线程池实现了最多 2 个工具的并行执行，两个各耗时 3 秒的工具，串行需要 6 秒，并行只需要 3 秒，**效率提升 50%**。
+
+并行执行的关键难点是**上下文隔离**——每个工具的执行线程需要能访问当前请求的上下文信息（用户 ID、会话 ID 等），我们通过 Python 的 `contextvars` 机制把主线程的上下文完整复制到每个工作线程。
+
+### 6.6 系统中的主要 AI 工具
+
+| 工具名称 | 功能描述 | 技术底层 |
+|---------|---------|---------|
+| 图片生成 | 文字描述生成图片，支持多种风格 | Dify 工作流 + 多模态大模型 |
+| AI 抠图 | 自动移除图片背景 | Dify 工作流管线 |
+| AI 改图 | 局部区域修改（换背景、换元素） | 多模态大模型（inPaint） |
+| AI 消除 | 移除指定物体 | 多模态大模型 |
+| AI 变清晰 | 低分辨率图片超分处理 | 超分辨率模型 |
+| AI 扩图 | 向外扩展画布内容 | Outpainting 模型 |
+| AI 智能选区 | 点击选中图像中的语义区域 | Meta SAM 模型 |
+| 图片压缩 | 纯前端高质量压缩 | WASM（MozJPEG/ImageQuant） |
+| 视频生成 | 文生视频 / 图生视频 | Dify 工作流 + 视频大模型 |
 
 ---
 
-## 七、中断与恢复机制
+## 七、中断与恢复机制（InterruptManager）
 
 ### 7.1 为什么需要中断恢复？
 
-**痛点场景**：
-- 用户稿豆不足 → 图片生成中断 → 充值后希望继续，而不是重头来
-- 复杂 VI 设计执行到第 3 步失败 → 前 2 步工具调用结果不应丢失
-- Token 过期 → 静默刷新后自动恢复
+这是用户体验层面的刚需。设想这样的场景：用户让 Agent 完成一套企业 VI 设计，Agent 已经成功生成了 Logo 和名片，正在生成信纸时，因为账户余额不足（我们叫「稿豆不足」）失败了。
 
-**如果没有中断恢复**：
-- 用户体验差，需要重复输入
-- 已消耗的 LLM Token 和 API 调用次数全部浪费
-- 复杂任务中间结果（前几步工具结果）全部丢失
+如果没有中断恢复机制，用户充值后只能重头来一遍——之前的 Logo、名片全部作废，已经消耗的 LLM 调用次数和 API 费用全部浪费，用户体验极差。
 
-### 7.2 InterruptManager 核心设计
+有了工具级中断恢复，用户充值后发送「继续」，系统精准从失败的那个工具开始重试，已成功的步骤不会重跑，这才是真正的「断点续传」。
 
-**三个阶段**：
+### 7.2 三种中断粒度的对比
 
-```
-【阶段1：触发中断】
-用户 → Agent 生成图片 → 工具返回 {code: "20006", message: "稿豆不足"}
-    ↓
-检测到状态码 20006 → 保存 checkpoint 到 Redis（TTL 15 分钟）
-checkpoint 包含：{消息历史, 失败的工具调用 ID, 剩余 LLM 调用次数}
-    ↓
-抛出 GraphInterrupt → LangGraph 捕获 → 向用户推送"稿豆不足"提示
+| 中断粒度 | 恢复起点 | 问题 |
+|---------|---------|------|
+| 会话级 | 从用户输入重新开始 | 全部浪费，体验极差 |
+| 对话轮级 | 从上一轮对话重新执行 | 已成功的工具调用被重复执行 |
+| **工具级**（我们采用） | 只重试失败的那个工具 | 精准恢复，节省时间和成本 |
 
-【阶段2：用户操作】
-用户充值 → 点击"继续"按钮
+### 7.3 中断恢复的完整流程
 
-【阶段3：恢复执行】
-InterruptManager.should_resume() → 检测到"继续"指令
-    ↓
-从 Redis 读取 checkpoint
-    ↓
-_rebuild_state_for_resume()：重建消息历史（跳过 status/heartbeat 消息）
-    ↓
-重新执行失败的工具调用（只重试失败的，不重跑已成功的）
-    ↓
-删除 checkpoint，向用户返回最终结果
-```
+**第一阶段：触发中断。**
 
-### 7.3 核心代码逻辑
+当工具调用返回特定错误码（如 20006 表示稿豆不足）时，系统进入中断流程。这时会生成一个 checkpoint——包含当前完整的消息历史、失败的工具调用 ID、剩余的 LLM 调用配额——将其序列化后存入 Redis，设置 15 分钟的有效期。然后向 LangGraph 抛出 `GraphInterrupt` 异常，LangGraph 捕获后暂停执行，向前端推送一条状态消息，提示用户操作（如充值）。
 
-```python
-class InterruptManager:
-    def should_resume(self, messages):
-        """检测用户是否发送了'继续'恢复指令"""
-        last_message = messages[-1]
-        if message_util.is_resumable_status_message(last_message):
-            status_msg_id = last_message.extra["last_tool_message_id"]
-            status_msg = self._find_status_message(messages, status_msg_id)
-            return True, status_msg
-        return False, None
-    
-    def resume_execution(self, messages, status_msg):
-        """恢复执行：只重试失败的工具"""
-        # 从状态消息提取断点信息
-        last_tool_message_id = status_msg.extra["last_tool_message_id"]
-        
-        # 重建干净的消息历史（过滤 status/heartbeat）
-        restored_messages = [
-            msg for msg in messages 
-            if msg.role not in (STATUS, HEARTBEAT)
-        ]
-        
-        # 找到需要重新执行的工具调用
-        to_call_tools = [
-            msg for msg in restored_messages
-            if msg.message_id == last_tool_message_id
-        ]
-        
-        # 重新执行
-        for tool_msg in to_call_tools:
-            yield from self.assistant._execute_tool(
-                tool_msg.function_call.name,
-                tool_msg.function_call.arguments,
-                restored_messages
-            )
-```
+**第二阶段：用户操作。**
 
-### 7.4 中断粒度对比
+前端收到状态消息后，弹出充值引导界面。用户完成充值后，点击「继续」，前端发送一条特殊的恢复消息，携带中断时记录的工具消息 ID，告知后端「我要从这里接着做」。
 
-| 中断粒度 | 说明 | 优缺点 |
-|---------|------|--------|
-| 会话级 | 整个会话重头开始 | 用户体验极差，全部浪费 |
-| 对话轮级 | 从上一轮开始 | 可能重复已成功的工具调用 |
-| **工具级**（项目采用） | 只重试失败的工具 | **精准恢复，节省成本和时间** |
+**第三阶段：精准恢复。**
 
-### 7.5 前端如何感知中断？
+后端收到恢复消息后，InterruptManager 介入。它首先从 Redis 读取对应的 checkpoint，然后重建干净的消息历史——过滤掉心跳消息、状态消息等内部消息，只保留用户消息和工具调用记录。最后根据 checkpoint 中记录的失败工具 ID，只对那个工具重新执行，跳过所有已成功的步骤。执行完毕后删除 checkpoint，任务继续向后推进。
 
-```typescript
-// 收到状态消息（role: "status", code: "20006"）
-if (message.role === 'status' && message.content.code === '20006') {
-    // 显示充值引导弹窗
-    showRechargeModal({
-        onConfirm: () => {
-            // 用户充值完成，发送"继续"消息
-            sendMessage({
-                role: 'user',
-                content: { type: 'text', text: '继续' },
-                extra: { 
-                    lastToolMessageId: message.extra.lastToolMessageId,
-                    isResume: true 
-                }
-            });
-        }
-    });
-}
-```
+### 7.4 这个机制的技术难点
+
+**难点一：状态重建的完整性。** 中断恢复时，重建的消息历史必须和中断前一模一样，否则 LLM 的推理会出现偏差。我们的 checkpoint 记录了精确的消息快照，过滤策略也经过仔细设计，确保重建后的上下文语义一致。
+
+**难点二：失败工具的精准定位。** 不是所有消息都需要重试，只有那个返回错误码的具体工具调用需要重试。我们通过 `lastToolMessageId` 字段在消息链中精准找到失败节点，实现「只动一处，其余不变」。
+
+**难点三：Redis 的 TTL 设计。** 15 分钟的有效期是经过业务分析的：太短，用户可能还没完成充值就过期；太长，Redis 中会堆积大量僵死的 checkpoint 占用内存。实践中 15 分钟覆盖了 95% 以上的用户操作时长。
 
 ---
 
-## 八、SSE 流式推送与消息缓冲队列
+## 八、SSE 流式推送与消息处理
 
 ### 8.1 为什么选 SSE 而不是 WebSocket？
 
+这是一个常见的面试题，核心要从**业务特点**出发来分析。
+
 | 方案 | 实时性 | 复杂度 | 适用场景 |
 |------|--------|--------|---------|
-| HTTP 轮询 | 低（延迟高） | 简单 | 不采用 |
-| WebSocket | 高（双向） | 复杂 | 需要客户端主动推送时 |
-| **SSE**（采用） | 高（单向服务端推送） | 简单 | AI 生成内容流式推送 |
+| HTTP 轮询 | 低（延迟高） | 简单 | 不适用 |
+| WebSocket | 高（真正双向通信） | 较复杂 | 需要客户端主动推送的场景 |
+| **SSE（我们选用）** | 高（服务端单向推送） | 简单 | AI 生成内容的流式输出 |
 
-**AI 对话场景特点**：服务端单向推送（生成内容），客户端主动发请求，SSE 天然适合，且支持断线重连。
+AI 对话场景的特点是：客户端通过 HTTP POST 主动发请求，服务端「说话」，客户端「听」，是典型的单向推送。SSE 天然契合这个模式，基于标准 HTTP 协议，不需要特殊握手，能穿越大部分代理和防火墙，浏览器原生支持断线重连。WebSocket 的双向通信能力在这里是过设计，反而引入了额外的握手协议和状态管理复杂度。
 
-### 8.2 SSE 后端架构：Producer-Consumer 模式
+### 8.2 后端 SSE 的核心设计：生产者消费者模式
 
-```python
-# 全局信号量：最大并发 20 * 0.8 = 16
-_producer_semaphore = threading.Semaphore(int(config.producer_max_concurrent) * 0.8)
+后端 SSE 响应采用了**生产者-消费者（Producer-Consumer）**模式，这是高并发场景下的经典设计。
 
-def build_completion_stream(message_dto):
-    # 获取信号量（5 秒超时，否则返回 429）
-    if not _producer_semaphore.acquire(timeout=5):
-        raise TimeoutError("系统繁忙")
-    
-    try:
-        q = queue.Queue(maxsize=16)      # 缓冲队列，防内存溢出
-        done_event = threading.Event()
-        
-        # Producer 线程：生成 AI 内容，放入队列
-        producer_thread = threading.Thread(
-            target=lambda: [q.put(r) for r in agent_service.completion(message_dto)]
-        )
-        producer_thread.start()
-        
-        # Consumer 主线程：从队列取数据，SSE 推送给前端
-        while True:
-            try:
-                item = q.get(timeout=0.5)
-                yield f"data: {json.dumps(item)}\n\n"
-            except queue.Empty:
-                if done_event.is_set() and q.empty():
-                    break
-    finally:
-        _producer_semaphore.release()
-```
+生产者线程负责运行 Agent 逻辑——LLM 推理、工具调用、结果处理——每产出一条消息就放入一个有界队列（队列大小限制为 16）。消费者线程（也是主线程）不断从队列取数据，以 SSE 格式推送给前端。
 
-**消息缓冲队列的价值**：
-- 解耦生产（AI 推理）和消费（HTTP 推送）速度差异
-- 队列满时自动背压，防止内存溢出
-- 支持高并发（最多 16 路并发）
+队列的作用是**解耦生产速度和消费速度**。LLM 推理可能很快，但 HTTP 推送受网络带宽影响；有了队列作缓冲，两端可以以各自最优的速度运行。队列满时自动产生背压，防止内存无限增长。
 
-### 8.3 前端 SSE 接收：TransformStream 分段 JSON 解析
+此外，系统用信号量控制全局并发上限——默认最多 16 个并发 SSE 连接，新请求进来时先尝试获取信号量，5 秒内获取不到就返回 429 错误（服务繁忙），这是防止服务过载的关键保障。
 
-**挑战**：SSE 推送的 JSON 数据可能被 TCP 分段，收到半截 JSON
+### 8.3 前端 SSE 的核心挑战：分段 JSON 解析
 
-```
-第 1 次收到：'{"role":"assi'
-第 2 次收到：'stant","content":"hello"}'
-```
+SSE 推送的数据是文本流，在 TCP 层面可能被分段，导致前端一次收到的数据是「半截 JSON」，直接解析会报错。
 
-**解决**：自定义 TransformStream，用 buffer 缓存不完整数据
+我们用 Web Streams API 中的 `TransformStream` 解决这个问题。核心思路是维护一个 buffer，每次收到数据先拼接到 buffer，然后尝试解析 JSON：如果解析成功，说明拿到了一个完整的消息对象，清空 buffer 继续下一条；如果解析失败（JSON 不完整），保留 buffer 等下一个数据块到来再拼接。
 
-```typescript
-const createCustomTransformStream = () => {
-  let buffer = '';
-  
-  return new TransformStream({
-    transform(chunk, controller) {
-      let text = buffer + chunk;
-      
-      try {
-        const data = JSON.parse(text);
-        controller.enqueue({ done: false, data });
-        buffer = '';           // 解析成功，清空 buffer
-      } catch {
-        buffer = text;         // 不完整，继续缓存
-      }
-    }
-  });
-};
-
-// 使用 XStream（ant-design-x 提供）处理流
-for await (const chunk of XStream({
-  readableStream: response.body,
-  transformStream: createCustomTransformStream(),
-})) {
-  messageHandler.handleSSEMessage(chunk.data, chunk.done);
-}
-```
+这个方法不需要约定消息边界符，纯粹依赖 JSON 自身的自描述性，简洁且健壮。
 
 ### 8.4 心跳保活机制
 
-后端每 30 秒推送一条心跳消息，防止 SSE 连接因空闲超时断开：
+AI 生成任务有时耗时较长（视频生成可能 60 秒以上），期间 SSE 连接没有数据传输，很多代理和浏览器会因为空闲超时而断开连接。
 
-```json
-{ "role": "heartbeat", "content": { "type": "heartbeat" } }
-```
-
-前端收到后重置超时计时器，不展示给用户（在 `filterMessages` 中过滤）。
+我们的解决方案是后端每 30 秒推送一条心跳消息，类型标记为 `heartbeat`。前端收到心跳后重置超时计时器，保持连接活跃。心跳消息在消息过滤阶段会被过滤掉，不展示给用户，对 UI 没有任何影响。
 
 ---
 
-## 九、消息系统：12 种消息类型实时渲染
+## 九、消息系统：多种消息类型渲染
 
-### 9.1 消息角色分类
+### 9.1 消息的角色体系
 
-| 角色 | 说明 | 是否展示 | 典型场景 |
-|------|------|---------|---------|
-| `user` | 用户消息 | ✅ 展示 | 用户输入 |
-| `assistant` | AI 回复 | ✅ 展示 | AI 文本、工具调用决策 |
-| `function` | 工具响应 | ❌ 内部消息 | 生成结果（图片 URL 等） |
-| `status` | 状态通知 | ⚠️ 错误时展示 | 稿豆不足、内容风险 |
-| `heartbeat` | 心跳保活 | ❌ 内部消息 | 连接保持 |
+系统中的消息按角色分为五类，每类有不同的处理逻辑：
 
-### 9.2 消息内容类型（content.type）
+| 角色 | 含义 | 是否展示给用户 | 说明 |
+|------|------|--------------|------|
+| `user` | 用户输入 | ✅ 展示 | 用户自己说的话 |
+| `assistant` | AI 回复 | ✅ 展示 | AI 的文字回复或工具调用决策 |
+| `function` | 工具执行结果 | ❌ 内部消息 | 图片 URL、视频 URL 等原始数据 |
+| `status` | 系统状态通知 | ⚠️ 错误时展示 | 余额不足、内容风险等 |
+| `heartbeat` | 心跳保活 | ❌ 内部消息 | 纯粹的连接维持 |
 
-| 类型 | 说明 | 渲染方式 |
-|------|------|---------|
-| `text` | 普通文本 | Markdown 渲染，流式追加 |
-| `reasoning` | AI 思考过程（DeepSeek-R1） | 折叠面板，thinking 完成后隐藏 |
-| `function_call` | 工具调用（含参数） | 显示"正在生成..."占位 |
-| `function_response` | 工具结果（含 URL） | 不直接展示，转换为 Tool 对象 |
-| `heartbeat` | 心跳 | 不展示 |
-| `status` | 系统状态 | 错误提示 UI |
-| `image` | 图片结果 | 图片卡片 + 操作按钮 |
-| `video` | 视频结果 | 视频播放器 + 进度条 |
+### 9.2 `assistant` 消息的三种子类型
 
-### 9.3 批量工具调用追踪（ConsecutiveFunctionCalls）
+`assistant` 消息内部还有三种不同的内容类型，渲染方式各不相同：
 
-**场景**：用户说"生成 4 张春天的照片"，AI 会连续推送 4 个 `function_call`
+**纯文本（text）**：AI 的普通回复，使用 Markdown 渲染，支持流式追加——每次 SSE 推送新内容就追加到已有文本末尾，实现「打字机」效果。同一条消息的 `messageId` 不变，通过覆盖更新而不是新增来实现流式展示。
 
-**追踪数据结构**：
+**推理过程（reasoning）**：DeepSeek-R1 等模型在回复前会先「思考」，这个思考过程作为 `reasoning` 类型的消息推送过来。思考中（loading 状态）时显示「AI 正在深度思考...」的折叠面板；思考完成（finished 状态）后，这条消息会被过滤掉，不再展示给用户，避免冗余。
 
-```typescript
-interface ConsecutiveFunctionCallTracking {
-  startTime: number;          // 第一个 call 到达时间
-  expectedResponses: number;  // 期望数量（动态递增，从 1 到 4）
-  receivedResponses: number;  // 已收到数量（从 0 到 4）
-  messageIds: Set<string>;    // 所有 call 的 messageId
-  parentMessageId: string;    // 父消息 ID（UI 聚合用）
-  isCompleted: boolean;
-}
-```
+**工具调用（function_call）**：AI 决定调用某个工具时推送的消息，包含工具名称和参数。前端收到后立刻在画布上创建占位元素，不需要等工具执行完毕。
 
-**判断是否"连续"**：100ms 时间窗口内的 `function_call` 视为同一批次
+### 9.3 批量工具调用的追踪机制
 
-**完成后聚合**：将 4 个 `function_call` 塞进父消息的 `functionCalls` 数组，UI 统一渲染 4 张图片网格
+当用户说「生成 4 张春天的照片」，AI 会连续推送 4 个 `function_call` 消息，然后依次收到 4 个 `function_response`。如何管理这种一对多的关系，是消息系统设计的难点。
 
-### 9.4 消息过滤逻辑
+我们设计了 **ConsecutiveFunctionCalls 追踪器**，核心数据结构记录：
+- **期望响应数**（expectedResponses）：动态增长，第一个 call 到达时设为 1，后续 call 到达就递增
+- **已收到响应数**（receivedResponses）：每收到一个 response 就加 1
+- **消息 ID 集合**（messageIds）：记录这批 call 的所有消息 ID，用于关联 response
+- **父消息 ID**（parentMessageId）：第一个 call 的 ID，用于 UI 聚合展示
 
-```typescript
-filterMessages(): MessageType[] {
-  return this.messages.filter(msg => {
-    if (msg.role === 'function') return false;          // 工具响应，内部消息
-    if (msg.role === 'heartbeat') return false;         // 心跳，不展示
-    if (msg.content.type === 'reasoning' 
-        && msg.status === 'finished') return false;     // 思考完成后隐藏
-    
-    // 批量调用：只保留父消息，子消息隐藏
-    if (msg.content.type === 'function_call') {
-      return isParentMessage(msg);  // 只有第一个 call 是父消息
-    }
-    return true;
-  });
-}
-```
+判断是否属于「同一批次」的依据是时间窗口：100ms 内到达的 `function_call` 视为同一批次。这个设计天然处理了「用户说了两句话各生成 4 张」的情况，两批之间超过 100ms 就会被识别为不同批次。
 
-### 9.5 占位（Placeholder）优化体验
+当 `receivedResponses` 等于 `expectedResponses` 时，认为这批任务全部完成，触发「全部生成完毕」事件，UI 展示完整的图片网格。
 
-**问题**：等 `function_response` 到达再创建元素，用户等待 2-10 秒看不到反馈。
+### 9.4 占位（Placeholder）优化感知延迟
 
-**解决**：`function_call` 到达时（< 50ms）立即在画布创建占位元素（加载动画），`function_response` 到达时替换为真实图片（淡入动画）。
+**问题**：工具调用（如图片生成）需要 2-10 秒，用户如果看到空白等待，体验很差。
+
+**解决思路**：把「感知等待」和「实际等待」解耦。`function_call` 消息到达时（距用户发送仅约 50ms），立刻在画布上创建一个占位元素，显示旋转的加载动画。用户几乎立刻就能看到画布上有东西在生成了。当 `function_response` 到达时，把占位替换为真实图片，加一个淡入动画。
 
 ```
-传统方案：用户发送 → AI 推理 5s → 工具执行 5s → 展示图片   感知延迟：10s
-优化方案：用户发送 → function_call 50ms → 创建占位 10ms → 展示加载动画
-                    → AI 推理 5s → 工具执行 5s → 替换真实图片   感知延迟：60ms
+传统方案：发送 → 等待生成（5-10s） → 展示图片      用户感知等待：5-10s
+优化方案：发送 → 50ms → 显示占位动画               用户感知等待：50ms
+                → 等待生成（5-10s）→ 替换真实图片
 ```
+
+这个优化在不改变后端处理速度的前提下，让用户感知延迟从秒级降到毫秒级。
+
+### 9.5 消息过滤：什么消息展示，什么不展示
+
+消息过滤逻辑有几个核心规则：
+
+- `function` 角色的消息（工具原始响应）不展示，它的内容已经通过 Tool 对象关联到对应的 `function_call` 消息上了
+- `heartbeat` 消息不展示，纯内部机制
+- `reasoning` 消息在状态变为 `finished` 后不展示（思考过程对用户没有价值）
+- 批量调用中，只保留第一个 `function_call`（父消息）展示，其余子消息隐藏，UI 通过父消息的 `functionCalls` 数组聚合展示所有结果
 
 ---
 
 ## 十、Dify 工作流集成
 
-### 10.1 Dify 在系统中的定位
+### 10.1 Dify 在系统中扮演什么角色？
 
-**Dify** 是开源的 LLM 应用开发平台，在项目中作为**工作流编排中间层**，负责：
-- 接收前端请求，路由到对应的 AI 工具
-- 管理 LLM 提示词（避免前端暴露）
-- 对接多个 AI 服务（图片生成、视频生成、模型等）
-- 以 SSE 格式流式返回结果
+Dify 是一个开源的 LLM 应用开发平台，我们把它用作**工作流编排中间层**。它的核心职责是：接收前端的 AI 请求，按照配置好的节点流程调用各种 AI 服务，以 SSE 格式流式返回结果。
 
-### 10.2 工作流管线
+用 Dify 而不是直接调用 AI API 的核心原因有三个：**第一**，提示词管理，系统提示词统一在 Dify 管理，不需要在前端或业务代码里维护；**第二**，工作流编排，复杂的多步骤 AI 操作（如图片生成前先做风格分析）可以配置成 Dify 的工作流节点，不需要写代码；**第三**，模型切换，想换大模型只需在 Dify 配置界面改，代码层面完全无感。
 
-```
-用户请求（skill: 'image', prompt: '...', count: 4）
-    ↓
-Dify 工作流节点1：解析参数，生成 4 个变体 prompt
-    ↓
-Dify 工作流节点2：并行调用图片生成 API × 4
-    ↓
-Dify 工作流节点3：逐个返回结果（SSE function_response）
-    ↓
-前端接收，批量展示
-```
+### 10.2 Dify 与 Qwen-Agent 的分工
 
-### 10.3 Dify vs Qwen-Agent 的分工
+这两个框架在我们系统中承担不同职责，并不冲突：
 
-| 功能 | Dify（前端侧对接） | Qwen-Agent（后端 Agent 框架） |
-|------|-----------------|------------------------------|
-| 图片生成 | ✅ Dify 工作流管线 | - |
-| 视频生成 | ✅ Dify 工作流管线 | - |
-| 复杂 Agent 对话 | - | ✅ Qwen-Agent + LangGraph |
-| 工具调度 | Dify 节点配置 | GaodingAssistant |
-| 模型接入 | DeepSeek-R1 | 豆包 Doubao-Seed-1.8 |
+| 功能 | Dify（工作流编排） | Qwen-Agent（Agent 框架） |
+|------|-----------------|------------------------|
+| 图片/视频生成 | ✅ 负责 | - |
+| 简单 AI 工具调用 | ✅ 负责 | - |
+| 复杂多步 Agent 对话 | - | ✅ 负责 |
+| LangGraph 状态图 | - | ✅ 负责 |
+| 使用模型 | DeepSeek-R1 | 豆包 Doubao-Seed-1.8 |
+
+简单来说，**工具调用走 Dify，Agent 推理走 Qwen-Agent**。
+
+### 10.3 豆包大模型的选型理由
+
+项目选择字节跳动的豆包（Doubao-Seed-1.8）作为主力模型，主要考量是：
+
+- **Function Calling 能力强**：豆包对工具调用的准确率高，参数生成格式稳定，工程实现上错误少
+- **中文理解优秀**：针对中文场景优化，设计类任务的理解效果好
+- **企业合作优惠**：字节跳动商务定价有优势，降低成本
+- **低延迟**：平均响应 200-500ms，用户体验好
 
 ---
 
 ## 十一、性能优化亮点
 
-### 11.1 Token 优化：URL 压缩（节省 90%+ Token）
+### 11.1 URL 压缩：Token 成本降低 20-30%
 
-**问题**：设计任务中频繁引用图片 URL，长 URL 消耗大量 Token。
+**背景**：设计类 AI 任务涉及大量图片 URL，一个带鉴权参数的 CDN URL 通常有 100-150 个字符。当一次对话中有 5-10 张参考图时，这些 URL 会占用大量 Token（大约 170 个以上），显著增加 API 调用成本。
 
-```
-原始 URL：https://cdn.gaoding.com/design/xxx.jpg?auth_key=abc123...（135 字符）
-5 个 URL = 675 字符 ≈ 170 tokens，成本显著
-```
+**解决方案**：自研 VariableMemoryManager，在发给 LLM 之前把所有 URL 替换为短占位符（如 `https://0`、`https://1`），LLM 内部只处理这些短标记，调用工具前再还原为完整 URL。
 
-**解决**：VariableMemoryManager 将 URL 替换为短占位符
+单个 URL 从 135 字符缩短到 9 字符，节省约 93%。5 个 URL 可以节省约 630 字符，也就是大约 157 个 Token。整体算下来，LLM 调用成本降低了 20-30%，在高并发场景下这是一笔可观的节省。
 
-```python
-class VariableMemoryManager:
-    def add_variable(self, url: str) -> str:
-        placeholder = f"https://{self.counter}"  # "https://0"
-        self.url_to_placeholder[url] = placeholder
-        self.placeholder_to_url[placeholder] = url
-        self.counter += 1
-        return placeholder
-```
+### 11.2 对话历史截断：保持上下文同时控制 Token
 
-发给 LLM 时 URL 变成 `https://0`（9 字符），**节省 93% Token**；工具调用前再还原为完整 URL。
+LLM 有 Context Window 限制，对话历史过长会超出窗口，同时也会增加 Token 消耗。我们的策略是只保留最近 20 条消息发给 LLM（ThreadManager.get_history_messages 负责裁剪），经过业务分析，20 条足够覆盖绝大多数对话的上下文需求。
 
-**成本降低 20-30%**。
+### 11.3 流式更新防抖：保证 UI 流畅
 
-### 11.2 消息历史截断
-
-只加载最近 20 条消息发给 LLM（`ThreadManager.get_history_messages()`），避免超长对话消耗大量 Token，同时保留足够上下文。
-
-### 11.3 流式更新防抖
-
-SSE 每秒推送 10-20 次，频繁调用 `onUpdate` 会导致 UI 卡顿：
-
-```typescript
-// 50ms 内的多次更新合并为 1 次 React 重渲染
-private debounceUpdate = debounce(() => {
-  this.observer.onUpdate(this.filteredMessages);
-}, 50);
-```
+SSE 每秒可能推送 10-20 次数据，如果每次都触发 React 重渲染，会明显影响页面流畅性。我们在 MessageHandler 的 `onUpdate` 通知上加了 50ms 的防抖——50ms 内的多次更新合并为一次 UI 刷新。对用户来说完全无感知，但 React 的渲染压力大幅降低。
 
 ### 11.4 三层限流设计
 
-| 层级 | 限流对象 | 默认值 |
-|------|---------|--------|
-| L1：Producer 信号量 | 全局并发请求数 | 20 × 0.8 = 16 |
-| L2：Queue 缓冲 | 单请求消息队列 | maxsize=16 |
-| L3：工具并行上限 | 单次并行工具数 | max=2 |
+系统对并发有三道防护：
+
+| 层级 | 限流对象 | 机制 | 默认值 |
+|------|---------|------|--------|
+| L1：全局并发 | 同时处理的请求数 | 信号量（Semaphore） | 16 个 |
+| L2：单请求缓冲 | 单个连接的消息队列 | 有界队列（Queue） | 容量 16 |
+| L3：工具并行 | 单次调用的工具数 | ThreadPoolExecutor | 最多 2 个 |
+
+这三层配合，既保护了 LLM API 不被打满，也防止了单个大请求拖垮整个服务。
 
 ### 11.5 增量消息过滤
 
-每次 SSE 到达不全量遍历消息，而是只处理新增消息：
+每次收到 SSE 数据都需要重新过滤消息列表来更新 UI。如果每次都遍历全部消息，在对话消息多时性能会退化。
 
-```typescript
-filterMessages() {
-  const newMessages = this.messages.slice(this.lastFilteredCount);
-  const filteredNew = newMessages.filter(this.filterPredicate);
-  this.lastFilteredCount = this.messages.length;
-  this.filteredMessages.push(...filteredNew);
-  return this.filteredMessages;
-}
-```
+优化方案是增量过滤：记录上次过滤到的消息数量，每次只处理新增的消息，拼接到已有的过滤结果数组末尾。时间复杂度从 O(n) 降为 O(新增消息数)，在长对话场景效果显著。
 
 ---
 
-## 十二、常见面试题 Q&A
+## 十二、高频面试题 Q&A
 
-### Q1：你们的 Agent 系统和普通的 AI 对话有什么区别？
+### Q1：你们的 Agent 系统和普通 AI 对话有什么本质区别？
 
-**A**：普通 AI 对话只是 LLM 生成文本，Agent 系统有以下本质区别：
+**A**：本质区别在于三点。
 
-1. **工具调用能力**：Agent 可以调用外部工具（图片生成、视频生成、改图等），不仅仅生成文字
-2. **多轮推理**：ReAct 模式下 LLM 能根据工具结果继续推理，形成反馈循环
-3. **任务规划**：复杂任务（如 VI 设计）通过 LangGraph 先规划再逐步执行
-4. **状态管理**：维护对话历史、工具执行状态，支持中断恢复
+第一是**行动能力**。普通 AI 对话只能输出文字，Agent 可以调用外部工具真正完成任务——生成一张图、剪一段视频、修改图片里的某个区域，这些都是真实的操作，不是描述。
 
-### Q2：ReAct 里 LLM 怎么知道要调用哪个工具？
+第二是**多轮推理**。ReAct 架构下，LLM 根据工具结果继续推理，形成反馈闭环，能处理「做了这步再看看要不要做那步」的动态决策。
 
-**A**：这是 Function Calling 机制。
+第三是**任务规划**。对于复杂任务，Agent 会先把目标拆解成步骤列表，再逐步执行，而不是一次性蒙答案。这个规划能力是普通对话完全没有的。
 
-1. 每次调用 LLM 时，把所有可用工具的名称、描述、参数格式一起传给它
-2. LLM 在推理时会判断：当前任务是否需要调用工具？需要哪个工具？参数是什么？
-3. LLM 返回 `function_call: { name: "图片生成", arguments: {...} }`，而不是文本
-4. 我们拦截到这个响应，执行对应工具，把结果再喂给 LLM
-5. LLM 根据工具结果生成最终回复
+### Q2：LLM 怎么知道该调用哪个工具？参数怎么来的？
 
-关键在于**工具描述写得好不好**——描述越准确，LLM 选工具越精准。
+**A**：这是 Function Calling 的工作原理。
 
-### Q3：SSE 和 WebSocket 怎么选？项目为什么用 SSE？
+每次向 LLM 发请求时，我们会把所有可用工具的描述一起发过去——工具名、功能说明、参数定义（类型、含义、是否必填）。LLM 在推理时会综合分析：当前任务需不需要工具？需要哪个？参数应该怎么填？
 
-**A**：
+然后 LLM 不是返回文字，而是返回一个结构化的工具调用指令，里面有工具名称和 JSON 格式的参数值。我们拦截这个指令，执行对应工具，把结果再喂给 LLM，它就能根据工具结果生成最终回复。
 
-- **AI 对话场景是单向推送**：服务端流式输出内容，客户端只是接收，不需要双向通信
-- SSE 基于 HTTP 协议，天然支持负载均衡、CDN、断线重连
-- SSE 实现更简单，不需要额外握手协议
-- 如果需要客户端实时推送（如多人协作），才会用 WebSocket
+这里最关键的是**工具描述的质量**。描述越精确，LLM 选工具越准确，参数生成越合理。我们在实践中不断打磨每个工具的描述，包括加上「适用场景」和「不适用场景」来减少歧义。
 
-项目中 SSE 每次请求都是新连接，客户端发送通过普通 HTTP POST，服务端通过 SSE 流式返回。
+### Q3：为什么选 SSE 而不是 WebSocket？
 
-### Q4：中断恢复机制的难点在哪里？
+**A**：从业务需求出发分析。
 
-**A**：难点有两个：
+AI 对话是单向推送场景——用户通过 HTTP POST 发消息，服务端流式输出 AI 生成内容，没有「服务端需要等客户端推数据」的需求。WebSocket 的双向通信能力在这里用不上，反而增加了握手协议和状态管理的复杂度。
 
-**1. 状态重建**：中断时要保存足够的上下文，恢复时能准确还原到中断点。我们的 checkpoint 包含完整消息历史、失败的工具调用 ID、剩余 LLM 调用次数。恢复时过滤掉 `status` 和 `heartbeat` 等内部消息，重建干净的历史。
+SSE 基于标准 HTTP/1.1 协议，能穿越代理和防火墙，浏览器原生支持断线自动重连，实现也更简单。对于 AI 对话这种单向推送场景，SSE 是最合适的选择。
 
-**2. 精准重试**：只重试失败的工具，不重跑已成功的。通过 `lastToolMessageId` 找到具体失败的工具调用，只对它重试，避免重复消耗 API 额度。
+如果场景变成了「多人协作白板」需要客户端实时推送数据，才会考虑 WebSocket。
 
-使用 Redis 存储 checkpoint，TTL 15 分钟，超时自动清理。
+### Q4：中断恢复机制难在哪里？你怎么解决的？
 
-### Q5：批量图片生成时，前端如何保证顺序展示？
+**A**：核心难点是两个。
 
-**A**：实际上展示是**不按顺序**的——哪张先生成完就先展示哪张，这样用户感知更快。
+**状态重建的准确性**。中断时要保存足够的上下文，恢复时能精准还原。如果 checkpoint 保存的信息不完整，或者恢复时对消息历史的处理有偏差，LLM 的推理就会跑偏，出现和原来不一样的行为。我们的 checkpoint 包含完整消息历史快照，恢复时有严格的过滤规则（只保留用户消息和工具调用记录，去掉心跳、状态等内部消息），确保重建语义一致。
 
-具体实现：
-1. 收到 4 个 `function_call` 时，立即创建 4 个占位（按顺序排列在网格中）
-2. 每个 `function_response` 到来时，通过 `lastToolMessageId` 找到对应的占位，替换为真实图片
-3. 占位的位置是固定的（第 1 张位置、第 2 张位置...），图片逐个填入，不会乱序
+**精准定位失败节点**。系统里可能有多个工具调用，要只重试失败的那一个，而不是把所有工具都重新跑一遍。我们通过 `lastToolMessageId` 字段在消息链中精准找到失败的工具调用节点，只对它重试。已经成功的步骤完全不动，这才真正实现了「断点续传」而不是「从检查点重跑」。
 
-### Q6：你们怎么处理 LLM 幻觉（Hallucination）问题？
+### Q5：批量图片生成时，如何保证展示顺序和关联关系？
 
-**A**：在这个 Agent 系统中，幻觉主要体现在工具选择错误或参数生成不对。我们的应对：
+**A**：展示上实际不严格按顺序，而是「哪张生成完先替换哪张」，这样用户能最快看到结果。
 
-1. **精确的工具描述**：每个工具的 description 和 parameters 都经过精心设计，减少歧义
-2. **参数验证**：工具调用前校验必需参数是否齐全，缺少时返回错误提示
-3. **用户确认**：复杂任务（VI 设计）先让 LLM 生成规划，用户确认后再执行，避免盲目执行
-4. **错误恢复**：工具调用失败时向用户说明原因，不自动重试（避免死循环浪费资源）
-5. **Router 层兜底**：简单问题直接回复，不调用工具，减少不必要的工具调用
+但位置是固定的。收到 4 个 `function_call` 时，立刻在画布的固定位置创建 4 个占位（第 1、2、3、4 格），每个占位记录对应的 `messageId`。`function_response` 到达时，通过 `lastToolMessageId` 字段找到对应的占位，替换为真实图片。这样即使图片生成顺序不定，每张图的最终位置是固定的，不会出现错位。
 
-### Q7：LangGraph 相比手写状态机有什么优势？
+### Q6：LangGraph 相比直接手写状态机有什么优势？
 
-**A**：
+**A**：主要体现在四个方面。
 
-1. **声明式**：用节点和边描述流程，而不是 if/else 嵌套，可读性强
-2. **内置状态管理**：State 自动在节点间传递，不需要手动维护全局变量
-3. **内置中断支持**：`GraphInterrupt` 是 LangGraph 的原生机制，配合 checkpoint 使用
-4. **可视化**：流程图可以直接从代码生成，方便调试
-5. **条件边**：`add_conditional_edges` 让分支逻辑更清晰
+**声明式**：用节点和边来描述业务流程，不是写 if/else 嵌套，逻辑结构一目了然，换一个人维护也容易理解。
 
-对于简单的 ReAct（一两步工具调用），手写循环更轻量；对于复杂的多步任务（需求理解→规划→执行→评估），LangGraph 的图结构更合适。
+**内置状态传递**：State 对象自动在所有节点间流转，不需要手动传参或维护全局变量，减少了状态管理的心智负担。
 
-### Q8：如果让你重新设计这个系统，有什么会改进的？
+**内置中断支持**：`GraphInterrupt` 是 LangGraph 的原生机制，和 checkpoint 配合使用开箱即用，不需要自己实现暂停/恢复逻辑。
 
-**A**（展现技术深度）：
+**条件跳转清晰**：`add_conditional_edges` 让分支逻辑和流转条件集中管理，而不是散落在各个函数内部。
 
-1. **长期记忆**：目前只有 20 条短期记忆。可以引入向量数据库（如 Pinecone），存储用户历史偏好和设计风格，提升个性化程度。
+当然，对于简单的一两步工具调用，手写循环更轻量，不必引入 LangGraph 的复杂度。选型要看任务的复杂程度。
 
-2. **流式工具调用**：当前工具调用是阻塞的（等待结果再返回）。如果工具本身支持流式输出（如逐步生成图片），可以进一步降低感知延迟。
+### Q7：你们是如何处理 LLM 幻觉（Hallucination）问题的？
 
-3. **深度反思**：当前失败只是通知用户，不自动重试。可以让 Agent 自我评估工具结果质量，对低质量结果自动触发重新生成（但要控制循环次数上限）。
+**A**：在 Agent 系统里，幻觉主要表现为两种：选错工具，或者生成了不合法的参数。
 
-4. **多 Agent 协作**：目前是 Router + 2 个 Agent。可以引入更细粒度的分工，如"设计评审 Agent"评估生成结果，"优化 Agent"对结果进行迭代改进。
+**在工具描述层面**：精心设计每个工具的描述，加上适用场景说明，消除歧义。这是减少幻觉的第一道防线，也是最有效的一道。
+
+**在参数验证层面**：工具调用前做参数校验，缺少必需参数时返回明确的错误信息，而不是用默认值凑合，把问题暴露出来。
+
+**在流程设计层面**：复杂任务（如 VI 设计）先让 LLM 生成计划，用户确认后再执行，给人工兜底的机会，避免 LLM 自作主张。
+
+**在失败处理层面**：工具调用失败不自动重试，而是告知用户，由用户决定是否继续。自动重试在某些场景会造成资源浪费（生成失败重试了 3 次，每次都消耗 API 费用），而且用户参与决策体验更可控。
+
+### Q8：如果让你重新设计这个系统，你会改进什么？
+
+**A**：我会在三个方向上改进。
+
+**长期记忆**：目前只有 20 条短期记忆，用户的历史设计偏好、常用风格、品牌色等信息没有沉淀。可以引入向量数据库（如 Pinecone），把用户的历史行为向量化存储，在每次对话时检索相关历史，让 AI 对「熟用户」的理解更精准。
+
+**流式工具调用**：目前工具调用是「等待完整结果再返回」的阻塞模式。如果图片生成 API 支持流式出图（逐步渲染），前端可以实时展示生成进度，而不是突然出现一张完整图片，用户体验会大幅提升。
+
+**Agent 自我反思**：目前工具失败后只通知用户，Agent 没有自我评估和纠正能力。可以加入「反思节点」——工具调用后让 LLM 评估结果质量，如果不满意（分辨率太低、主题偏差太大）则自动触发一次重新生成，但要严格限制反思次数上限（比如最多 2 次），防止无限循环浪费资源。
 
 ---
 
-## 附录：关键技术术语速查
+## 附录：核心技术术语速查表
 
-| 术语 | 解释 |
-|------|------|
-| **ReAct** | Reasoning + Acting，LLM 交替推理和行动的 Agent 模式 |
-| **Plan-and-Execute** | 先全局规划任务列表，再逐步执行的 Agent 模式 |
-| **LangGraph** | 状态图编排框架，将 Agent 执行过程建模为有向图 |
+| 术语 | 一句话解释 |
+|------|----------|
+| **ReAct** | 让 LLM 交替「推理（Thought）→ 行动（Action）→ 观察（Observation）」的 Agent 模式 |
+| **Plan-and-Execute** | 先让 LLM 规划完整任务列表，再逐步执行的 Agent 模式 |
+| **LangGraph** | 将 Agent 执行过程建模为状态图（节点 + 边）的编排框架 |
 | **Function Calling** | LLM 返回结构化工具调用指令而非纯文本的能力 |
-| **MCP** | Model Context Protocol，工具接口标准化协议 |
-| **Dify** | 开源 LLM 工作流平台，用于工作流编排和 API 管理 |
-| **Qwen-Agent** | 阿里开源 Agent 框架，封装 LLM 调用和工具管理 |
-| **SSE** | Server-Sent Events，服务端单向流式推送协议 |
-| **TransformStream** | Web Streams API，用于流式数据转换处理 |
+| **Dify** | 开源 LLM 工作流平台，用于 AI 工作流配置和 API 管理 |
+| **Qwen-Agent** | 阿里开源的 Agent 开发框架，封装了 LLM 调用和工具注册管理 |
+| **MCP 协议** | Model Context Protocol，工具接口的标准化描述规范 |
+| **SSE** | Server-Sent Events，HTTP 单向流式推送协议，用于 AI 内容实时输出 |
+| **TransformStream** | Web Streams API，用于流式数据转换，解决分段 JSON 解析问题 |
 | **InterruptManager** | 自研中断恢复管理器，实现工具级断点续传 |
-| **GraphInterrupt** | LangGraph 内置中断机制，与 checkpoint 配合使用 |
-| **Checkpoint** | 中断点快照，存储于 Redis，TTL 15 分钟 |
-| **ConsecutiveFunctionCalls** | 批量工具调用追踪器，管理并行生成的多张图片 |
-| **Placeholder** | 占位元素，在 function_call 到达时立即创建，降低感知延迟 |
+| **GraphInterrupt** | LangGraph 内置中断异常，配合 checkpoint 实现暂停/恢复 |
+| **Checkpoint** | 中断状态快照，包含消息历史和失败工具信息，存于 Redis（TTL 15 分钟） |
+| **ConsecutiveFunctionCalls** | 批量工具调用追踪器，管理「生成 4 张图」类的并行任务 |
+| **Placeholder（占位）** | `function_call` 到达时在画布立刻创建的临时元素，降低用户感知延迟 |
 | **VariableMemoryManager** | URL 压缩器，将长 URL 替换为短占位符，节省 90%+ Token |
-| **contextvars** | Python 上下文变量，用于线程间传递 RequestContext |
+| **Producer-Consumer** | 生产者-消费者模式，解耦 AI 推理速度和 HTTP 推送速度 |
+| **指数退避算法** | 轮询间隔随失败次数指数增长，避免无效高频请求打垮服务 |
+| **contextvars** | Python 上下文变量机制，用于在并行线程间安全传递请求上下文 |
 
 ---
 
-> **文档说明**：本文档基于 InsMind AI+智能创作平台的真实技术实现整理，结合面试场景的"总分总"答题框架编写。建议重点掌握：系统架构（三层）、三种工作模式（ReAct/LangGraph/轮询）、工具调用链路、中断恢复机制、SSE 消息处理五个核心模块。
+> **核心建议**：面试时重点展开的五个模块——**三层架构**（体现工程设计能力）、**ReAct + LangGraph**（体现对 AI Agent 的深度理解）、**工具调用链路**（体现全栈视角）、**中断恢复机制**（体现解决实际问题的能力）、**SSE 消息处理**（体现前端技术深度）。每个模块都用「背景问题 → 设计思路 → 具体实现 → 效果收益」的逻辑来讲，逻辑完整，让面试官感受到你不只是「用过」，而是真正「理解和设计了」这个系统。
